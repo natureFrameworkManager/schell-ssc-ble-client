@@ -71,8 +71,128 @@ EEPROM_NeedBased = [896, 8],
 
 
 
-def parse_advertisement():
-    return None
+def parse_reset_reason(reason: int) -> str:
+    flags = []
+    mapping = [
+        (0x1, "PIN"),
+        (0x2, "DOG"),
+        (0x4, "SREQ"),
+        (0x8, "LOCKUP"),
+        (0x10000, "OFF"),
+        (0x20000, "LPCOMP"),
+        (0x40000, "DIF"),
+        (0x80000, "NFC"),
+    ]
+    for mask, name in mapping:
+        if reason & mask:
+            flags.append(name)
+    return "-".join(flags)
+
+def parse_advertisement(data: bytes):
+    """
+    Byte 0: DeviceType
+    Byte 1: DeviceSubType
+    Byte 16: DeviceSubSubType
+    Byte 2..13: Serial/DisplayName
+    Byte 18: Battery voltage
+    Last Byte: Battery (update?)
+    """
+    advertisement = {}
+    advertisement["device_type"] = data[0]
+    advertisement["device_sub_type"] = data[1]
+    advertisement["serial_display_name"] = data[2:14].decode("utf-8").rstrip("\x00")
+    advertisement["device_sub_sub_type"] = data[16]
+    advertisement["battery_voltage_adv"] = data[18]
+    return advertisement
+
+def calculate_battery_advertisement(advertisement: dict):
+    advertisement["battery_voltage"] = advertisement.get("battery_voltage_adv", 0) / 10
+    if advertisement["battery_voltage"] <= 4.5:
+        advertisement["battery_level"] = 0
+    elif advertisement["battery_voltage"] > 7.5: # saturated
+        advertisement["battery_level"] = 100
+    elif advertisement["battery_voltage"] > 6:
+        advertisement["battery_level"] = 100
+    else:
+        # Linear interpolation between 4.5V and 6 from 0% to 100% battery level
+        advertisement["battery_level"] = int((advertisement["battery_voltage"] - 4.5) / (6 - 4.5) * 100)
+    return advertisement
+
+def map_device_types_advertisement(advertisement: dict):
+    device_type_mapping = {
+        0x00: "Unrecognized",
+        0x02: "Waschtisch",
+        0x03: "Urinal",
+        0x04: "WC",
+        0x10: "CVD/Solenoid",
+        0xF0: "BLE-Basic",
+        0xF1: "BLE-Vitus",
+        0xF2: "BLE-Montus-Flow",
+    }
+    device_subtype_waschtisch_mapping = {
+        1: "Celis E²",
+        10: "Puris E²",
+        11: "Venus E²",
+        12: "Xeris E²",
+        20: "Vitus IR",
+        21: "Grandis E",
+        30: "Linus E",
+        31: "Walis E"
+    }
+    device_subtype_urinal_mapping = {
+        1: "Schelltronic",
+        2: "Urinal"
+    }
+    device_subsubtype_high_mapping = {
+        0: "",
+        1: "S",
+        2: "M",
+        3: "L"
+    }
+    device_subsubtype_low_mapping = {
+        0: "",
+        1: "HD-K",
+        2: "HD-M",
+        3: "ND-M",
+        4: "HD-T",
+        5: "HD-SP",
+        6: "HD-SP"
+    }
+    advertisement["device_type_name"] = device_type_mapping.get(advertisement.get("device_type", 0x00), "Unknown")
+    if advertisement["device_type_name"] == "Waschtisch":
+        advertisement["device_subtype_name"] = device_subtype_waschtisch_mapping.get(advertisement.get("device_sub_type", 0x00), "Unbekannte Armatur")
+    elif advertisement["device_type_name"] == "Urinal":
+        advertisement["device_subtype_name"] = device_subtype_urinal_mapping.get(advertisement.get("device_sub_type", 0x00), "Unbekannte Armatur")
+    else:
+        advertisement["device_subtype_name"] = ""
+    advertisement["device_subsubtype_high_name"] = device_subsubtype_high_mapping.get((advertisement.get("device_sub_sub_type", 0x00) & 0xF0) >> 4, "")
+    advertisement["device_subsubtype_low_name"] = device_subsubtype_low_mapping.get(advertisement.get("device_sub_sub_type", 0x00) & 0x0F, "")
+    return advertisement
+
+def calculate_device_name_advertisement(advertisement: dict):
+    """
+    If [0]==0x0D: bytes [1..5] are a packed BCD-like article number ("{0:X1}{1:X2}{2:X2}{3:X2}{4:X2}", hyphenated)
+    If [0]==0x0A: bytes [3..8] form a 6-byte hex serial
+    Otherwise the full 12 bytes are a CP1250-encoded free-text name, null-trimmed
+    """
+    device_name = ""
+    if advertisement.get("serial_display_name"):
+        data = advertisement["serial_display_name"]
+        if data[0] == 0x0D:
+            device_name = "{0:X1}-{1:X2}-{2:X2}-{3:X2}-{4:X2}".format(data[1], data[2], data[3], data[4], data[5])
+        elif data[0] == 0x0A:
+            device_name = "".join("{:02X}".format(b) for b in data[3:9])
+        else:
+            device_name = data.decode("cp1250").rstrip("\x00")
+    advertisement["device_name"] = device_name
+    return advertisement
+
+def get_advertisement(data: bytes):
+    advertisement = parse_advertisement(data)
+    advertisement = map_device_types_advertisement(advertisement)
+    advertisement = calculate_device_name_advertisement(advertisement)
+    advertisement = calculate_battery_advertisement(advertisement)
+    return advertisement
 
 def parse_notify_response(characteristic: str, data: bytes):
     """
@@ -208,21 +328,23 @@ def build_read_array_request(index: int, length: int):
 
 def display_SE2_device(device: simplepyble.Peripheral):
     print(f"Found SSC device: {device.identifier()} [{device.address()}]")
-    if not SCAN_DEBUG_SSC:
-        return
-    print(f"    Connectable: {'Yes' if device.is_connectable() else 'No'}")
-    print(f'    Address Type: {device.address_type()}')
-    print(f'    Tx Power: {device.tx_power()} dBm')
+    if SCAN_DEBUG_SSC:
+        print(f"    Connectable: {'Yes' if device.is_connectable() else 'No'}")
+        print(f'    Address Type: {device.address_type()}')
+        print(f'    Tx Power: {device.tx_power()} dBm')
 
+        manufacturer_data = device.manufacturer_data()
+        for manufacturer_id, value in manufacturer_data.items():
+            print(f"    Manufacturer ID: {manufacturer_id}")
+            print(f"    Manufacturer data: {value}")
+
+        services = device.services()
+        for service in services:
+            print(f"    Service UUID: {service.uuid()}")
+            print(f"    Service data: {service.data()}")
     manufacturer_data = device.manufacturer_data()
     for manufacturer_id, value in manufacturer_data.items():
-        print(f"    Manufacturer ID: {manufacturer_id}")
-        print(f"    Manufacturer data: {value}")
-
-    services = device.services()
-    for service in services:
-        print(f"    Service UUID: {service.uuid()}")
-        print(f"    Service data: {service.data()}")
+        print(get_advertisement(value))
 
 def display_unknown_device(peripheral: simplepyble.Peripheral):
     print(f"Found unknown device ({'Connectable' if peripheral.is_connectable() else 'Non-Connectable'}): {peripheral.identifier()} [{peripheral.address()}]")
