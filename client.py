@@ -212,6 +212,12 @@ def parse_notify_response(characteristic: str, data: bytes):
     print("Unknown command:", command, "payload:", payload)
     return None
 
+def parse_version(data: bytes):
+    if data[0] & 0b10000000:
+        return f"T{data[0]&0x7F:D2}.{data[1]:D2}"
+    else:
+        return f"V{data[0]:D2}.{data[1]:D2}"
+
 def parse_stats(data: bytes):
     stats = {}
     stats["count-normal"] = int.from_bytes(data[0:2], byteorder='little')
