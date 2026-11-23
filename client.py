@@ -2,8 +2,8 @@ import time
 
 import simplepyble
 
-SCAN_DURATION = 10
-SCAN_DEBUG_SSC = True
+SCAN_DURATION = 1
+SCAN_DEBUG_SSC = False
 SCAN_SHOW_UNKNOWN = False
 DEBUG_BYTES = True
 
@@ -212,12 +212,18 @@ def parse_notify_response(characteristic: str, data: bytes):
         raise ValueError("Invalid data length")
     command = data[1]
     payload = data[2:]
-    if command == CMD_READ_ARRAY:
-        """Request: Payload[0] = Index, Payload[1] = Length of the array to read"""
-        if payload[0] == 0x6:
-            return get_lifetime_stats(payload[1:])
-        if payload[0] == 0x00:
-            return "telemetry"
+    if characteristic == DEVICE_INFO_CHARACTERISTIC:
+        if command == CMD_READ_ARRAY:
+            """Request: Payload[0] = Index"""
+            if payload[0] == 0x00:
+                return "telemetry"
+            if payload[0] == 0x01:
+                return "firmware info"
+    elif characteristic == SSC_CHARACTERISTIC:
+        if command == CMD_READ_ARRAY:
+            """Request: Payload[0] = Index, Payload[1] = Length of the array to read"""
+            if payload[0] == 0x6:
+                return get_lifetime_stats(payload[1:])
     print("Unknown command:", command, "payload:", payload.hex(' '))
     return None
 
