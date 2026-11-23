@@ -278,7 +278,7 @@ def parse_notify_response(characteristic: str, data: bytes):
         if original_request is None:
             print("Original request is None for config")
             return None
-        if command == CMD_READ_EE_BY_ADDR:
+        if command == CMD_READ_EE_BY_ADDR: # -> 00 3.8
             """Request: Request[2] = Address HI, Request[3] = Address LO, Request[4] = Length of the data to read"""
             return "config read"
         if command == CMD_WRITE_EE_BY_ADDR:
@@ -296,6 +296,8 @@ def parse_notify_response(characteristic: str, data: bytes):
             return None
         if command == CMD_READ_EE_BY_ADDR:
             """Request: Request[2] = Address HI, Request[3] = Address LO, Request[4] = Length of the data to read"""
+            original_address = (original_request[2] << 8) | original_request[3]
+            print(f"{extract_eeprom(payload, original_address)}")
             return "read"
         if command == CMD_WRITE_EE_BY_ADDR:
             """Request: Request[2] = Address HI, Request[3] = Address LO, Request[4] = Length of the data to write, Request[5..N] = Data to write"""
@@ -307,6 +309,8 @@ def parse_notify_response(characteristic: str, data: bytes):
             """Request: Request[2] = Index, Request[3] = Length of the array to read"""
             if original_request[2] == 0x06:
                 return get_lifetime_stats(payload[1:])
+            if original_request[2] == 0x0B:
+                return "today_stats"
         return "unknown ssc command"
     print("Unknown command:", command, "payload:", payload.hex(' '))
     return None
@@ -532,7 +536,7 @@ def query_device(device: simplepyble.Peripheral):
         device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, cmd_queries[SSC_CHARACTERISTIC][0])
         print("Read request sent")
 
-        eeprom_cmds = generate_cmds_for_eeprom_dump()
+        eeprom_cmds = generate_cmds_for_eeprom_dump(32, 200)
         for cmd in eeprom_cmds:
             cmd_queries[SSC_CHARACTERISTIC][1].put(cmd)
 
