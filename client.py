@@ -2,7 +2,7 @@ import simplepyble
 
 SCAN_DURATION = 10
 SCAN_DEBUG_SSC = True
-SCAN_SHOW_UNKNOWN = True
+SCAN_SHOW_UNKNOWN = False
 DEBUG_BYTES = True
 
 SERVICE_UUID                    = "89ce0100-56b1-40c1-be09-887f3c723d22"
@@ -359,7 +359,14 @@ def query_device(device: simplepyble.Peripheral):
         services = device.services()
         service_characteristic_pair = []
         for service in services:
+            print(f"    Service UUID: {service.uuid()}")
+            print(f"    Service characteristics: {service.characteristics()}")
             for characteristic in service.characteristics():
+                print(f"    Characteristic UUID: {characteristic.uuid()}")
+                print(f"    Characteristic descriptors: {characteristic.descriptors()}")
+                print(f"    Characteristic capabilities: {characteristic.capabilities()}")
+                print(f"    Characteristic writable command: {characteristic.can_write_command()}")
+                print(f"    Characteristic writable request: {characteristic.can_write_request()}")
                 service_characteristic_pair.append((service.uuid(), characteristic.uuid()))
 
         # Query the user to pick a service/characteristic pair
