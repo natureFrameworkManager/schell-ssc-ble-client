@@ -227,6 +227,40 @@ def parse_notify_response(characteristic: str, data: bytes):
     print("Unknown command:", command, "payload:", payload.hex(' '))
     return None
 
+def parse_telemetry(data: bytes):
+    telemetry = {}
+    telemetry["temperature"] = int.from_bytes(data[0:4], byteorder='little') # 32-bit, LE
+    telemetry["battery_voltage_raw"] = int.from_bytes(data[4:6], byteorder='little') # 16-bit, LE
+    telemetry["vcc"] = int.from_bytes(data[6:8], byteorder='little') # 16-bit, LE
+    telemetry["3.3v"] = int.from_bytes(data[8:10], byteorder='little') # 16-bit, LE
+    telemetry["year"] = int.from_bytes(data[10:12], byteorder='little') # 16-bit, LE
+    telemetry["month"] = data[12] # 8-bit
+    telemetry["day"] = data[13] # 8-bit
+    telemetry["hour"] = data[14] # 8-bit
+    telemetry["minute"] = data[15] # 8-bit
+    telemetry["second"] = data[16] # 8-bit
+    return telemetry
+
+def parse_firmware(data: bytes):
+    firmware = {}
+    firmware["hardware_version_raw"] = data[0:2]
+    firmware["bootloader_version_raw"] = data[2:4]
+    firmware["reset_reason_raw"] = data[11:15]
+    return firmware
+
+def get_telemetry(data: bytes):
+    telemetry = parse_telemetry(data)
+    telemetry = calculate_battery(telemetry)
+    telemetry = calculate_voltage(telemetry)
+    telemetry = calculate_date_time(telemetry)
+    return telemetry
+
+def get_firmware(data: bytes):
+    firmware = parse_firmware(data)
+    firmware = map_version(firmware)
+    firmware = map_reset_reason(firmware)
+    return firmware
+
 def parse_version(data: bytes):
     if data[0] & 0b10000000:
         return f"T{data[0]&0x7F:D2}.{data[1]:D2}"
