@@ -1,3 +1,4 @@
+import datetime
 import time
 
 import simplepyble
@@ -91,7 +92,7 @@ def parse_reset_reason(reason: int) -> str:
             flags.append(name)
     return "-".join(flags)
 
-def extract_advertisement(data: bytes):
+def extract_advertisement(data: bytes) -> dict[str, int|None|bytes|str]:
     """
     Byte 0: DeviceType
     Byte 1: DeviceSubType
@@ -100,7 +101,13 @@ def extract_advertisement(data: bytes):
     Byte 18: Battery voltage
     Last Byte: Battery (update?)
     """
-    advertisement = {}
+    advertisement: dict[str, int|None|bytes] = {
+        "device_type": None,
+        "device_sub_type": None,
+        "serial_display_name": None,
+        "device_sub_sub_type": None,
+        "battery_voltage_adv": None
+    }
     advertisement["device_type"] = data[0]
     advertisement["device_sub_type"] = data[1]
     advertisement["serial_display_name"] = data[2:14]
@@ -108,7 +115,7 @@ def extract_advertisement(data: bytes):
     advertisement["battery_voltage_adv"] = data[18]
     return advertisement
 
-def calculate_battery(battery_voltage_adv: int):
+def calculate_battery(battery_voltage_adv: int) -> dict[str, float|int]:
     battery_voltage = battery_voltage_adv / 10
     if battery_voltage <= 4.5:
         battery_level = 0
@@ -124,7 +131,7 @@ def calculate_battery(battery_voltage_adv: int):
         "battery_level": battery_level
     }
 
-def map_device_types(device_type: int|None, device_sub_type: int|None, device_sub_sub_type: int|None):
+def map_device_types(device_type: int|None, device_sub_type: int|None, device_sub_sub_type: int|None) -> dict[str, str]:
     device_type_mapping = {
         0x00: "Unrecognized",
         0x02: "Waschtisch",
@@ -180,7 +187,7 @@ def map_device_types(device_type: int|None, device_sub_type: int|None, device_su
         "device_subsubtype_low_name": device_subsubtype_low_name
     }
 
-def calculate_device_name(serial_display_name: bytes|None):
+def calculate_device_name(serial_display_name: bytes|None) -> str:
     """
     If [0]==0x0D: bytes [1..5] are a packed BCD-like article number ("{0:X1}{1:X2}{2:X2}{3:X2}{4:X2}", hyphenated)
     If [0]==0x0A: bytes [3..8] form a 6-byte hex serial
@@ -197,7 +204,7 @@ def calculate_device_name(serial_display_name: bytes|None):
             device_name = data.decode("cp1250").rstrip("\x00")
     return device_name
 
-def get_advertisement(data: bytes):
+def get_advertisement(data: bytes) -> dict[str, int|None|bytes|str|float]:
     if DEBUG_BYTES:
         print(f"Raw advertisement data: {data.hex(' ')}")
     advertisement = extract_advertisement(data)
@@ -223,9 +230,9 @@ def parse_notify_response(characteristic: str, data: bytes):
         if command == CMD_READ_ARRAY:
             """Request: Payload[0] = Index"""
             if payload[0] == 0x00:
-                return "telemetry"
+                return get_telemetry(payload[1:])
             if payload[0] == 0x01:
-                return "firmware info"
+                return get_firmware(payload[1:])
     elif characteristic == SSC_CHARACTERISTIC:
         if command == CMD_READ_ARRAY:
             """Request: Payload[0] = Index, Payload[1] = Length of the array to read"""
@@ -234,11 +241,11 @@ def parse_notify_response(characteristic: str, data: bytes):
     print("Unknown command:", command, "payload:", payload.hex(' '))
     return None
 
-def parse_telemetry(data: bytes):
+def extract_telemetry(data: bytes):
     telemetry = {}
     telemetry["temperature"] = int.from_bytes(data[0:4], byteorder='little') # 32-bit, LE
     telemetry["battery_voltage_raw"] = int.from_bytes(data[4:6], byteorder='little') # 16-bit, LE
-    telemetry["vcc"] = int.from_bytes(data[6:8], byteorder='little') # 16-bit, LE
+    telemetry["vcc_raw"] = int.from_bytes(data[6:8], byteorder='little') # 16-bit, LE
     telemetry["3.3v"] = int.from_bytes(data[8:10], byteorder='little') # 16-bit, LE
     telemetry["year"] = int.from_bytes(data[10:12], byteorder='little') # 16-bit, LE
     telemetry["month"] = data[12] # 8-bit
@@ -248,7 +255,7 @@ def parse_telemetry(data: bytes):
     telemetry["second"] = data[16] # 8-bit
     return telemetry
 
-def parse_firmware(data: bytes):
+def extract_firmware(data: bytes) -> dict[str, bytes|None|str]:
     firmware = {}
     firmware["hardware_version_raw"] = data[0:2]
     firmware["bootloader_version_raw"] = data[2:4]
@@ -256,17 +263,29 @@ def parse_firmware(data: bytes):
     return firmware
 
 def get_telemetry(data: bytes):
-    telemetry = parse_telemetry(data)
-    telemetry = calculate_battery(telemetry)
-    telemetry = calculate_voltage(telemetry)
-    telemetry = calculate_date_time(telemetry)
+    telemetry = extract_telemetry(data)
+    telemetry["battery"] = calculate_battery(telemetry["battery_voltage_raw"])
+    telemetry["vcc"] = calculate_voltage(telemetry["vcc_raw"])
+    telemetry["datetime"] = calculate_date_time(telemetry["year"], telemetry["month"], telemetry["day"], telemetry["hour"], telemetry["minute"], telemetry["second"])
     return telemetry
 
-def get_firmware(data: bytes):
-    firmware = parse_firmware(data)
-    firmware = map_version(firmware)
-    firmware = map_reset_reason(firmware)
+def calculate_voltage(vcc: int) -> float:
+    return vcc / 1000.0 # Volts
+
+def calculate_date_time(year: int, month: int, day: int, hour: int, minute: int, second: int) -> datetime.datetime:
+    return datetime.datetime(year, month, day, hour, minute, second)
+
+def get_firmware(data: bytes) -> dict[str, str|None|bytes]:
+    firmware = extract_firmware(data)
+    firmware.update(map_version(firmware["hardware_version_raw"], firmware["bootloader_version_raw"]))
+    firmware["reset_reason"] = parse_reset_reason(firmware["reset_reason_raw"])
     return firmware
+
+def map_version(hardware_version: bytes, bootload_version: bytes) -> dict[str, str]:
+    return {
+        "hardware_version": parse_version(hardware_version),
+        "bootloader_version": parse_version(bootload_version)
+    }
 
 def parse_version(data: bytes):
     if data[0] & 0b10000000:
@@ -442,8 +461,8 @@ def query_device(device: simplepyble.Peripheral):
         device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, build_read_array_request(0x08, 8))
         print("Read request sent")
 
-        while device.is_connected():
-            print("Waiting for notifications...")
+        for i in range(5):
+            print(f"{i}: Waiting for notifications...")
             time.sleep(1)
 
     else:
