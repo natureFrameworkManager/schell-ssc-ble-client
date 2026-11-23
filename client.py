@@ -339,6 +339,26 @@ def query_device(device: simplepyble.Peripheral):
     print(f"Querying device: {device.identifier()} [{device.address()}]")
     if device.is_connected():
         print("    Device is connected")
+        print("Successfully connected, listing services...")
+        services = device.services()
+        service_characteristic_pair = []
+        for service in services:
+            for characteristic in service.characteristics():
+                service_characteristic_pair.append((service.uuid(), characteristic.uuid()))
+
+        # Query the user to pick a service/characteristic pair
+        print("Please select a service/characteristic pair:")
+        for i, (service_uuid, characteristic) in enumerate(service_characteristic_pair):
+            print(f"{i}: {service_uuid} {characteristic}")
+
+        choice = int(input("Enter choice: "))
+        service_uuid, characteristic_uuid = service_characteristic_pair[choice]
+
+        device.notify(service_uuid, characteristic_uuid, lambda data: print(f"Notification: {data}, {parse_notify_response(characteristic_uuid, data)}"))
+        print("Notification handler set up")
+
+        device.write_request(service_uuid, characteristic_uuid, build_read_request(32, 17))
+
     else:
         print("    Device is not connected")
 
