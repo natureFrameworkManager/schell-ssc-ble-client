@@ -3,6 +3,7 @@ import simplepyble
 SCAN_DURATION = 10
 SCAN_DEBUG_SSC = True
 SCAN_SHOW_UNKNOWN = True
+DEBUG_BYTES = True
 
 SERVICE_UUID                    = "89ce0100-56b1-40c1-be09-887f3c723d22"
 DEVICE_INFO_CHARACTERISTIC      = "89ce0101-56b1-40c1-be09-887f3c723d22"
@@ -100,7 +101,7 @@ def parse_advertisement(data: bytes):
     advertisement = {}
     advertisement["device_type"] = data[0]
     advertisement["device_sub_type"] = data[1]
-    advertisement["serial_display_name"] = data[2:14].decode("utf-8").rstrip("\x00")
+    advertisement["serial_display_name"] = data[2:14]
     advertisement["device_sub_sub_type"] = data[16]
     advertisement["battery_voltage_adv"] = data[18]
     return advertisement
@@ -188,6 +189,8 @@ def calculate_device_name_advertisement(advertisement: dict):
     return advertisement
 
 def get_advertisement(data: bytes):
+    if DEBUG_BYTES:
+        print(f"Raw advertisement data: {data.hex(' ')}")
     advertisement = parse_advertisement(data)
     advertisement = map_device_types_advertisement(advertisement)
     advertisement = calculate_device_name_advertisement(advertisement)
@@ -349,12 +352,12 @@ def display_SE2_device(device: simplepyble.Peripheral):
         manufacturer_data = device.manufacturer_data()
         for manufacturer_id, value in manufacturer_data.items():
             print(f"    Manufacturer ID: {manufacturer_id}")
-            print(f"    Manufacturer data: {value}")
+            print(f"    Manufacturer data: {value.hex(' ')}")
 
         services = device.services()
         for service in services:
             print(f"    Service UUID: {service.uuid()}")
-            print(f"    Service data: {service.data()}")
+            print(f"    Service data: {service.data().hex(' ')}")
     manufacturer_data = device.manufacturer_data()
     for manufacturer_id, value in manufacturer_data.items():
         print(get_advertisement(value))
@@ -367,12 +370,12 @@ def display_unknown_device(peripheral: simplepyble.Peripheral):
     manufacturer_data = peripheral.manufacturer_data()
     for manufacturer_id, value in manufacturer_data.items():
         print(f"    Manufacturer ID: {manufacturer_id}")
-        print(f"    Manufacturer data: {value}")
+        print(f"    Manufacturer data: {value.hex(' ')}")
 
     services = peripheral.services()
     for service in services:
         print(f"    Service UUID: {service.uuid()}")
-        print(f"    Service data: {service.data()}")
+        print(f"    Service data: {service.data().hex(" ")}")
 
 adapters = simplepyble.Adapter.get_adapters()
 
