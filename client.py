@@ -326,6 +326,13 @@ def build_read_array_request(index: int, length: int):
     payload.append(length)
     return build_request(CMD_READ_ARRAY, bytes(payload))
 
+def query_device(device: simplepyble.Peripheral):
+    print(f"Querying device: {device.identifier()} [{device.address()}]")
+    if device.is_connected():
+        print("    Device is connected")
+    else:
+        print("    Device is not connected")
+
 def display_SE2_device(device: simplepyble.Peripheral):
     print(f"Found SSC device: {device.identifier()} [{device.address()}]")
     if SCAN_DEBUG_SSC:
@@ -388,7 +395,8 @@ adapter.set_callback_on_scan_start(lambda: print("Scan started"))
 adapter.set_callback_on_scan_stop(lambda: print("Scan stopped"))
 adapter.set_callback_on_scan_found(lambda device: print(f"Discovered {'SSC' if 'SE2' in device.identifier() else 'unknown'} device: {device.identifier()} [{device.address()}]") if (('SE2' in device.identifier() and SCAN_DEBUG_SSC) or ('SE2' not in device.identifier() and SCAN_SHOW_UNKNOWN)) else None)
 
-adapter.scan_for(SCAN_DURATION)
+print(f"Scan for {SCAN_DURATION} seconds")
+adapter.scan_for(SCAN_DURATION * 1000)
 
 devices = adapter.scan_get_results()
 print(f"Found {len(devices)} devices, including {len([device for device in devices if 'SE2' in device.identifier()])} SSC devices")
@@ -397,3 +405,19 @@ for device in [device for device in devices if 'SE2' in device.identifier()]:
 if SCAN_SHOW_UNKNOWN:
     for device in [device for device in devices if 'SE2' not in device.identifier()]:
         display_unknown_device(device)
+
+if len([device for device in devices if 'SE2' in device.identifier()]) == 0:
+    print("No SSC devices found")
+    exit()
+
+print("Select a SSC device(s) to connect to [split by comma]:")
+ssc_devices = [device for device in devices if 'SE2' in device.identifier()]
+for i, device in enumerate(ssc_devices):
+    print(f"{i}: {device.identifier()} [{device.address()}]")
+choice = input("Enter choice: ")
+selected_devices = [ssc_devices[int(i)] for i in choice.split(",")]
+
+for device in selected_devices:
+    print(f"Connecting to {device.identifier()} [{device.address()}]")
+    device.connect()
+    query_device(device)
