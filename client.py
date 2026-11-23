@@ -91,7 +91,7 @@ def parse_reset_reason(reason: int) -> str:
             flags.append(name)
     return "-".join(flags)
 
-def parse_advertisement(data: bytes):
+def extract_advertisement(data: bytes):
     """
     Byte 0: DeviceType
     Byte 1: DeviceSubType
@@ -108,20 +108,23 @@ def parse_advertisement(data: bytes):
     advertisement["battery_voltage_adv"] = data[18]
     return advertisement
 
-def calculate_battery_advertisement(advertisement: dict):
-    advertisement["battery_voltage"] = advertisement.get("battery_voltage_adv", 0) / 10
-    if advertisement["battery_voltage"] <= 4.5:
-        advertisement["battery_level"] = 0
-    elif advertisement["battery_voltage"] > 7.5: # saturated
-        advertisement["battery_level"] = 100
-    elif advertisement["battery_voltage"] > 6:
-        advertisement["battery_level"] = 100
+def calculate_battery(battery_voltage_adv: int):
+    battery_voltage = battery_voltage_adv / 10
+    if battery_voltage <= 4.5:
+        battery_level = 0
+    elif battery_voltage > 7.5: # saturated
+        battery_level = 100
+    elif battery_voltage > 6:
+        battery_level = 100
     else:
         # Linear interpolation between 4.5V and 6 from 0% to 100% battery level
-        advertisement["battery_level"] = int((advertisement["battery_voltage"] - 4.5) / (6 - 4.5) * 100)
-    return advertisement
+        battery_level = int((battery_voltage - 4.5) / (6 - 4.5) * 100)
+    return {
+        "battery_voltage": battery_voltage,
+        "battery_level": battery_level
+    }
 
-def map_device_types_advertisement(advertisement: dict):
+def map_device_types(device_type: int|None, device_sub_type: int|None, device_sub_sub_type: int|None):
     device_type_mapping = {
         0x00: "Unrecognized",
         0x02: "Waschtisch",
@@ -161,42 +164,46 @@ def map_device_types_advertisement(advertisement: dict):
         5: "HD-SP",
         6: "HD-SP"
     }
-    advertisement["device_type_name"] = device_type_mapping.get(advertisement.get("device_type", 0x00), "Unknown")
-    if advertisement["device_type_name"] == "Waschtisch":
-        advertisement["device_subtype_name"] = device_subtype_waschtisch_mapping.get(advertisement.get("device_sub_type", 0x00), "Unbekannte Armatur")
-    elif advertisement["device_type_name"] == "Urinal":
-        advertisement["device_subtype_name"] = device_subtype_urinal_mapping.get(advertisement.get("device_sub_type", 0x00), "Unbekannte Armatur")
+    device_type_name = device_type_mapping.get(device_type if device_type is not None else 0x00, "Unknown")
+    if device_type_name == "Waschtisch":
+        device_subtype_name = device_subtype_waschtisch_mapping.get(device_sub_type if device_sub_type is not None else 0x00, "Unbekannte Armatur")
+    elif device_type_name == "Urinal":
+        device_subtype_name = device_subtype_urinal_mapping.get(device_sub_type if device_sub_type is not None else 0x00, "Unbekannte Armatur")
     else:
-        advertisement["device_subtype_name"] = ""
-    advertisement["device_subsubtype_high_name"] = device_subsubtype_high_mapping.get((advertisement.get("device_sub_sub_type", 0x00) & 0xF0) >> 4, "")
-    advertisement["device_subsubtype_low_name"] = device_subsubtype_low_mapping.get(advertisement.get("device_sub_sub_type", 0x00) & 0x0F, "")
-    return advertisement
+        device_subtype_name = ""
+    device_subsubtype_high_name = device_subsubtype_high_mapping.get((device_sub_sub_type if device_sub_sub_type is not None else 0x00 & 0xF0) >> 4, "")
+    device_subsubtype_low_name = device_subsubtype_low_mapping.get(device_sub_sub_type if device_sub_sub_type is not None else 0x00 & 0x0F, "")
+    return {
+        "device_type_name": device_type_name,
+        "device_subtype_name": device_subtype_name,
+        "device_subsubtype_high_name": device_subsubtype_high_name,
+        "device_subsubtype_low_name": device_subsubtype_low_name
+    }
 
-def calculate_device_name_advertisement(advertisement: dict):
+def calculate_device_name(serial_display_name: bytes|None):
     """
     If [0]==0x0D: bytes [1..5] are a packed BCD-like article number ("{0:X1}{1:X2}{2:X2}{3:X2}{4:X2}", hyphenated)
     If [0]==0x0A: bytes [3..8] form a 6-byte hex serial
     Otherwise the full 12 bytes are a CP1250-encoded free-text name, null-trimmed
     """
     device_name = ""
-    if advertisement.get("serial_display_name"):
-        data = advertisement["serial_display_name"]
+    if serial_display_name:
+        data = serial_display_name
         if data[0] == 0x0D:
             device_name = "{0:X1}-{1:X2}-{2:X2}-{3:X2}-{4:X2}".format(data[1], data[2], data[3], data[4], data[5])
         elif data[0] == 0x0A:
             device_name = "".join("{:02X}".format(b) for b in data[3:9])
         else:
             device_name = data.decode("cp1250").rstrip("\x00")
-    advertisement["device_name"] = device_name
-    return advertisement
+    return device_name
 
 def get_advertisement(data: bytes):
     if DEBUG_BYTES:
         print(f"Raw advertisement data: {data.hex(' ')}")
-    advertisement = parse_advertisement(data)
-    advertisement = map_device_types_advertisement(advertisement)
-    advertisement = calculate_device_name_advertisement(advertisement)
-    advertisement = calculate_battery_advertisement(advertisement)
+    advertisement = extract_advertisement(data)
+    advertisement.update(map_device_types(advertisement["device_type"], advertisement["device_sub_type"], advertisement["device_sub_sub_type"]))
+    advertisement["device_name"] = calculate_device_name(advertisement.get("serial_display_name"))
+    advertisement.update(calculate_battery(advertisement["battery_voltage_adv"]))
     return advertisement
 
 def parse_notify_response(characteristic: str, data: bytes):
