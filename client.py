@@ -3,6 +3,8 @@ import time
 
 import simplepyble
 
+from queue import Queue
+
 SCAN_DURATION = 1
 SCAN_DEBUG_SSC = False
 SCAN_SHOW_UNKNOWN = False
@@ -74,6 +76,12 @@ EEPROM_CalendarEnd = [880, None],
 EEPROM_NeedBased = [896, 8],
 
 
+
+cmd_queries: dict[str, Queue[bytes]] = {
+    DEVICE_INFO_CHARACTERISTIC: Queue(),
+    DEVICE_CONFIG_CHARACTERISTIC: Queue(),
+    SSC_CHARACTERISTIC: Queue()
+}
 
 def parse_reset_reason(reason: int) -> str:
     flags = []
@@ -226,6 +234,9 @@ def parse_notify_response(characteristic: str, data: bytes):
         raise ValueError("Invalid data length")
     command = data[1]
     payload = data[2:]
+    if cmd_queries.get(characteristic) is None:
+        return None
+    original_request = cmd_queries.get(characteristic).get()
     if characteristic == DEVICE_INFO_CHARACTERISTIC:
         if command == CMD_READ_ARRAY:
             """Request: Payload[0] = Index"""
@@ -233,11 +244,40 @@ def parse_notify_response(characteristic: str, data: bytes):
                 return get_telemetry(payload[1:])
             if payload[0] == 0x01:
                 return get_firmware(payload[1:])
-    elif characteristic == SSC_CHARACTERISTIC:
+    elif characteristic == DEVICE_CONFIG_CHARACTERISTIC:
+        if original_request is None:
+            print("Original request is None for config")
+            return None
+        if command == CMD_READ_EE_BY_ADDR:
+            """Request: Request[2] = Address HI, Request[3] = Address LO, Request[4] = Length of the data to read"""
+            return "config read"
+        if command == CMD_WRITE_EE_BY_ADDR:
+            """Request: Request[2] = Address HI, Request[3] = Address LO, Request[4] = Length of the data to write, Request[5..N] = Data to write"""
+            return "config write"
+        if command == CMD_DIG_WRITE_BIT:
+            """Request: Request[2] = Address, Request[3] = Value to write"""
+            return "config bit_write"
         if command == CMD_READ_ARRAY:
-            """Request: Payload[0] = Index, Payload[1] = Length of the array to read"""
-            if payload[0] == 0x6:
+            """Request: Request[2] = Index, Request[3] = Length of the array to read"""
+            return "config read_array"
+    elif characteristic == SSC_CHARACTERISTIC:
+        if original_request is None:
+            print("Original request is None for SSC")
+            return None
+        if command == CMD_READ_EE_BY_ADDR:
+            """Request: Request[2] = Address HI, Request[3] = Address LO, Request[4] = Length of the data to read"""
+            return "read"
+        if command == CMD_WRITE_EE_BY_ADDR:
+            """Request: Request[2] = Address HI, Request[3] = Address LO, Request[4] = Length of the data to write, Request[5..N] = Data to write"""
+            return "write"
+        if command == CMD_DIG_WRITE_BIT:
+            """Request: Request[2] = Address, Request[3] = Value to write"""
+            return "bit_write"
+        if command == CMD_READ_ARRAY:
+            """Request: Request[2] = Index, Request[3] = Length of the array to read"""
+            if original_request[2] == 0x06:
                 return get_lifetime_stats(payload[1:])
+        return "unknown ssc command"
     print("Unknown command:", command, "payload:", payload.hex(' '))
     return None
 
@@ -458,6 +498,7 @@ def query_device(device: simplepyble.Peripheral):
         device.notify(SERVICE_UUID, SSC_CHARACTERISTIC, lambda data: print(f"SSC Notification: {data.hex(' ')}\nParsed: {parse_notify_response(SSC_CHARACTERISTIC, data)}"))
         print("Notification handler set up")
 
+        cmd_queries[SSC_CHARACTERISTIC].put(build_read_array_request(0x08, 8))
         device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, build_read_array_request(0x08, 8))
         print("Read request sent")
 
