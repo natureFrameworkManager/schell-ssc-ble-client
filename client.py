@@ -487,6 +487,12 @@ choice = input("Enter choice: ")
 selected_devices = [ssc_devices[int(i)] for i in choice.split(",")]
 
 for device in selected_devices:
-    print(f"Connecting to {device.identifier()} [{device.address()}]")
-    device.connect()
-    query_device(device)
+    try:
+        print(f"Connecting to {device.identifier()} [{device.address()}]")
+        device.connect()
+        query_device(device)
+    except Exception as e:
+        print(f"Failed to connect to {device.identifier()} [{device.address()}]: {e}")
+    finally:
+        if device.is_connected():
+            device.disconnect()
