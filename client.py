@@ -216,6 +216,8 @@ def parse_notify_response(characteristic: str, data: bytes):
         """Request: Payload[0] = Index, Payload[1] = Length of the array to read"""
         if payload[0] == 0x6:
             return get_lifetime_stats(payload[1:])
+        if payload[0] == 0x00:
+            return "telemetry"
     print("Unknown command:", command, "payload:", payload.hex(' '))
     return None
 
@@ -390,7 +392,7 @@ def query_device(device: simplepyble.Peripheral):
         device.notify(SERVICE_UUID, SSC_CHARACTERISTIC, lambda data: print(f"SSC Notification: {data.hex(' ')}\nParsed: {parse_notify_response(SSC_CHARACTERISTIC, data)}"))
         print("Notification handler set up")
 
-        device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, build_read_request(32, 17))
+        device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, build_read_array_request(0x08, 8))
         print("Read request sent")
 
         while device.is_connected():
