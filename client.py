@@ -1,3 +1,5 @@
+import time
+
 import simplepyble
 
 SCAN_DURATION = 10
@@ -214,7 +216,7 @@ def parse_notify_response(characteristic: str, data: bytes):
         """Request: Payload[0] = Index, Payload[1] = Length of the array to read"""
         if payload[0] == 0x6:
             return get_lifetime_stats(payload[1:])
-    print("Unknown command:", command, "payload:", payload)
+    print("Unknown command:", command, "payload:", payload.hex(' '))
     return None
 
 def parse_version(data: bytes):
@@ -351,36 +353,49 @@ def build_read_array_request(index: int, length: int):
         print(f"Read array request payload: {payload.hex(' ')}")
     return build_request(CMD_READ_ARRAY, bytes(payload))
 
+def get_device_services(device: simplepyble.Peripheral):
+    print("Successfully connected, listing services...")
+    services = device.services()
+    service_characteristic_pair = []
+    for service in services:
+        print(f"    Service UUID: {service.uuid()}")
+        for characteristic in service.characteristics():
+            print(f"      Characteristic UUID: {characteristic.uuid()}")
+            print(f"        Characteristic capabilities: {characteristic.capabilities()}")
+            print(f"        Characteristic writable command: {characteristic.can_write_command()}")
+            print(f"        Characteristic writable request: {characteristic.can_write_request()}")
+            service_characteristic_pair.append((service.uuid(), characteristic.uuid()))
+
+    # Query the user to pick a service/characteristic pair
+    print("Please select a service/characteristic pair:")
+    for i, (service_uuid, characteristic) in enumerate(service_characteristic_pair):
+        print(f"{i}: {service_uuid} {characteristic}")
+
+    choice = int(input("Enter choice: "))
+    service_uuid, characteristic_uuid = service_characteristic_pair[choice]
+    return service_uuid, characteristic_uuid
+
 def query_device(device: simplepyble.Peripheral):
     print(f"Querying device: {device.identifier()} [{device.address()}]")
     if device.is_connected():
         print("    Device is connected")
-        print("Successfully connected, listing services...")
-        services = device.services()
-        service_characteristic_pair = []
-        for service in services:
-            print(f"    Service UUID: {service.uuid()}")
-            print(f"    Service characteristics: {service.characteristics()}")
-            for characteristic in service.characteristics():
-                print(f"    Characteristic UUID: {characteristic.uuid()}")
-                print(f"    Characteristic descriptors: {characteristic.descriptors()}")
-                print(f"    Characteristic capabilities: {characteristic.capabilities()}")
-                print(f"    Characteristic writable command: {characteristic.can_write_command()}")
-                print(f"    Characteristic writable request: {characteristic.can_write_request()}")
-                service_characteristic_pair.append((service.uuid(), characteristic.uuid()))
 
-        # Query the user to pick a service/characteristic pair
-        print("Please select a service/characteristic pair:")
-        for i, (service_uuid, characteristic) in enumerate(service_characteristic_pair):
-            print(f"{i}: {service_uuid} {characteristic}")
+        if not device.is_connected():
+            print("    Device is not connected")
+            device.connect()
 
-        choice = int(input("Enter choice: "))
-        service_uuid, characteristic_uuid = service_characteristic_pair[choice]
+        print("    Device is now connected")
 
-        device.notify(service_uuid, characteristic_uuid, lambda data: print(f"Notification: {data}, {parse_notify_response(characteristic_uuid, data)}"))
+        device.notify(SERVICE_UUID, DEVICE_INFO_CHARACTERISTIC, lambda data: print(f"Info Notification: {data.hex(' ')}\nParsed: {parse_notify_response(DEVICE_INFO_CHARACTERISTIC, data)}"))
+        device.notify(SERVICE_UUID, SSC_CHARACTERISTIC, lambda data: print(f"SSC Notification: {data.hex(' ')}\nParsed: {parse_notify_response(SSC_CHARACTERISTIC, data)}"))
         print("Notification handler set up")
 
-        device.write_request(service_uuid, characteristic_uuid, build_read_request(32, 17))
+        device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, build_read_request(32, 17))
+        print("Read request sent")
+
+        while device.is_connected():
+            print("Waiting for notifications...")
+            time.sleep(1)
 
     else:
         print("    Device is not connected")
