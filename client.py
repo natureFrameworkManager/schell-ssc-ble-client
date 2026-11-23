@@ -203,6 +203,8 @@ def parse_notify_response(characteristic: str, data: bytes):
     Byte 1: Command/Opcode
     Byte 2..N: Payload (depends on the command)
     """
+    if DEBUG_BYTES:
+        print(f"Raw notify response data: {data.hex(' ')}")
     length = data[0]
     if length != len(data):
         raise ValueError("Invalid data length")
@@ -256,6 +258,8 @@ def handle_today_variant(data: bytes):
     return bytes(result)
 
 def get_normalized_and_calculated_stats(data: bytes, today_variant: bool = False):
+    if DEBUG_BYTES:
+        print(f"Original stats data: {data.hex(' ')}")
     if today_variant:
         data = handle_today_variant(data)
     stats = parse_stats(data)
@@ -264,6 +268,8 @@ def get_normalized_and_calculated_stats(data: bytes, today_variant: bool = False
     return stats
 
 def get_lifetime_stats(data: bytes):
+    if DEBUG_BYTES:
+        print(f"Lifetime stats data: {data.hex(' ')}")
     stats = {}
     stats["count-restart"] = int.from_bytes(data[0:4], byteorder='little')
     stats["count-lifetime"] = int.from_bytes(data[4:8], byteorder='little')
@@ -274,6 +280,8 @@ def build_request(command: int, payload: bytes):
     request.append( 1 + 1 + len(payload)) # Length = Byte for length + Byte for command + Payload length
     request.append(command)
     request.extend(payload)
+    if DEBUG_BYTES:
+        print(f"Built request: {request.hex(' ')}")
     return bytes(request)
 
 def build_read_request(address: int, length: int):
@@ -287,6 +295,8 @@ def build_read_request(address: int, length: int):
     payload.append(address >> 8) # 16-bit address, high byte first
     payload.append(address & 0xFF) # low byte
     payload.append(length)
+    if DEBUG_BYTES:
+        print(f"Read request payload: {payload.hex(" ")}")
     return build_request(CMD_READ_EE_BY_ADDR, bytes(payload))
 
 def build_write_request(address: int, data: bytes):
@@ -301,6 +311,8 @@ def build_write_request(address: int, data: bytes):
     payload.append(address & 0xFF) # low byte
     payload.append(len(data)) # length of the data to write
     payload.extend(data)
+    if DEBUG_BYTES:
+        print(f"Write request payload: {payload.hex(' ')}")
     return build_request(CMD_WRITE_EE_BY_ADDR, bytes(payload))
 
 def build_write_bit_request(bit_address: int, value: int):
@@ -321,6 +333,8 @@ def build_write_bit_request(bit_address: int, value: int):
     payload = bytearray()
     payload.append(bit_address)
     payload.append(value)
+    if DEBUG_BYTES:
+        print(f"Write bit request payload: {payload.hex(' ')}")
     return build_request(CMD_DIG_WRITE_BIT, bytes(payload))
 
 def build_read_array_request(index: int, length: int):
@@ -333,6 +347,8 @@ def build_read_array_request(index: int, length: int):
     payload = bytearray()
     payload.append(index)
     payload.append(length)
+    if DEBUG_BYTES:
+        print(f"Read array request payload: {payload.hex(' ')}")
     return build_request(CMD_READ_ARRAY, bytes(payload))
 
 def query_device(device: simplepyble.Peripheral):
