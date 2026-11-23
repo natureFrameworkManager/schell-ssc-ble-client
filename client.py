@@ -26,62 +26,91 @@ CMD_WRITE_EE_BY_ADDR    = 0x0B
 CMD_READ_ARRAY          = 0x1A
 
 # EEPROM regions [addr, len]
-EEPROM_ArticleNumber = [32, 5]
-EEPROM_CleaningStop_enabled = [108, 1]
-EEPROM_CleaningStop_runtime = [109, 2]
-EEPROM_StagnationAndFollowUp = [112, 2]
-EEPROM_FollowUpRuntime = [114, 2]
-EEPROM_StagnationFlushInterval_mode = [118, 1]
-EEPROM_StagnationFlushInterval_hours = [119, 2]
-EEPROM_StagnationFlushInterval_runtime = [121, 2]
-EEPROM_HybridMode = [128, 1]
-EEPROM_HybridInterval = [129, 1]
-EEPROM_HybridRuntime = [130, 1]
-EEPROM_PreFlushMode = [146, 1]
-EEPROM_PreFlushStart = [147, 1]
-EEPROM_SensorRange = [148, 1]
-EEPROM_Scenario = [149, 1]
-EEPROM_PreFlushRuntime = [158, 1]
-EEPROM_ThermalAndContinuous = [160, None]
-EEPROM_StadionMode = [162, 1]
-EEPROM_OdourStopMode = [163, 1]
-EEPROM_OdourStopInterval = [164, 1]
-EEPROM_StadionRuntime = [167, 1]
-EEPROM_ContinuousEnabled = [168, 1]
-EEPROM_ContinuousRuntime = [169, 2]
-EEPROM_ThermalEnabled = [171, 1]
-EEPROM_ThermalRuntime = [172, 2]
-EEPROM_OdourStopRuntime = [174, 1]
-EEPROM_Installer = [176, 15]
-EEPROM_InstallationDate = [192, 3]
-EEPROM_WcFlushDuration = [200, 1]
-EEPROM_Location = [208, 15]
-EEPROM_ConfigStart = [256, None]
-EEPROM_AmbiantSensorEnabled = [276, 1]
-EEPROM_LongRangeMode = [284, 2]
-EEPROM_RaweId = [288, 10]
-EEPROM_RangeMode = [336, None]
-EEPROM_LongRangeModeInterval = [347, 2]
-EEPROM_UserDetectionModeInterval = [349, 2]
-EEPROM_HandDetectTime = [362, 2]
-EEPROM_SwitchOffInterval = [370, 2]
-EEPROM_ConfigEnd = [383, None]
-EEPROM_DeviceName = [512, 12]
-EEPROM_DevicePassword = [528, 7]
-EEPROM_Password = [535, 7]
-EEPROM_FlowRate = [594, 1]
-EEPROM_SensorExpertMode = [606, 1]
-EEPROM_CalendarStart = [768, 112]
-EEPROM_CalendarEnd = [880, None]
-EEPROM_NeedBased = [896, 8]
+EEPROM_MAP = [
+    [[32, 5], "EEPROM_ArticleNumber", lambda data: "EEPROM_ArticleNumber"],
+    [[108, 1], "EEPROM_CleaningStop_enabled", lambda data: "EEPROM_CleaningStop_enabled"],
+    [[109, 2], "EEPROM_CleaningStop_runtime", lambda data: "EEPROM_CleaningStop_runtime"],
+    [[112, 2], "EEPROM_StagnationAndFollowUp", lambda data: "EEPROM_StagnationAndFollowUp"],
+    [[114, 2], "EEPROM_FollowUpRuntime", lambda data: "EEPROM_FollowUpRuntime"],
+    [[118, 1], "EEPROM_StagnationFlushInterval_mode", lambda data: "EEPROM_StagnationFlushInterval_mode"],
+    [[119, 2], "EEPROM_StagnationFlushInterval_hours", lambda data: "EEPROM_StagnationFlushInterval_hours"],
+    [[121, 2], "EEPROM_StagnationFlushInterval_runtime", lambda data: "EEPROM_StagnationFlushInterval_runtime"],
+    [[128, 1], "EEPROM_HybridMode", lambda data: "EEPROM_HybridMode"],
+    [[129, 1], "EEPROM_HybridInterval", lambda data: "EEPROM_HybridInterval"],
+    [[130, 1], "EEPROM_HybridRuntime", lambda data: "EEPROM_HybridRuntime"],
+    [[146, 1], "EEPROM_PreFlushMode", lambda data: "EEPROM_PreFlushMode"],
+    [[147, 1], "EEPROM_PreFlushStart", lambda data: "EEPROM_PreFlushStart"],
+    [[148, 1], "EEPROM_SensorRange", lambda data: "EEPROM_SensorRange"],
+    [[149, 1], "EEPROM_Scenario", lambda data: "EEPROM_Scenario"],
+    [[158, 1], "EEPROM_PreFlushRuntime", lambda data: "EEPROM_PreFlushRuntime"],
+    [[160, None], "EEPROM_ThermalAndContinuous", lambda data: "EEPROM_ThermalAndContinuous"],
+    [[162, 1], "EEPROM_StadionMode", lambda data: "EEPROM_StadionMode"],
+    [[163, 1], "EEPROM_OdourStopMode", lambda data: "EEPROM_OdourStopMode"],
+    [[164, 1], "EEPROM_OdourStopInterval", lambda data: "EEPROM_OdourStopInterval"],
+    [[167, 1], "EEPROM_StadionRuntime", lambda data: "EEPROM_StadionRuntime"],
+    [[168, 1], "EEPROM_ContinuousEnabled", lambda data: "EEPROM_ContinuousEnabled"],
+    [[169, 2], "EEPROM_ContinuousRuntime", lambda data: "EEPROM_ContinuousRuntime"],
+    [[171, 1], "EEPROM_ThermalEnabled", lambda data: "EEPROM_ThermalEnabled"],
+    [[172, 2], "EEPROM_ThermalRuntime", lambda data: "EEPROM_ThermalRuntime"],
+    [[174, 1], "EEPROM_OdourStopRuntime", lambda data: "EEPROM_OdourStopRuntime"],
+    [[176, 15], "EEPROM_Installer", lambda data: "EEPROM_Installer"],
+    [[192, 3], "EEPROM_InstallationDate", lambda data: "EEPROM_InstallationDate"],
+    [[200, 1], "EEPROM_WcFlushDuration", lambda data: "EEPROM_WcFlushDuration"],
+    [[208, 15], "EEPROM_Location", lambda data: "EEPROM_Location"],
+    [[256, None], "EEPROM_ConfigStart", lambda data: "EEPROM_ConfigStart"],
+    [[276, 1], "EEPROM_AmbiantSensorEnabled", lambda data: "EEPROM_AmbiantSensorEnabled"],
+    [[284, 2], "EEPROM_LongRangeMode", lambda data: "EEPROM_LongRangeMode"],
+    [[288, 10], "EEPROM_RaweId", lambda data: "EEPROM_RaweId"],
+    [[336, None], "EEPROM_RangeMode", lambda data: "EEPROM_RangeMode"],
+    [[347, 2], "EEPROM_LongRangeModeInterval", lambda data: "EEPROM_LongRangeModeInterval"],
+    [[349, 2], "EEPROM_UserDetectionModeInterval", lambda data: "EEPROM_UserDetectionModeInterval"],
+    [[362, 2], "EEPROM_HandDetectTime", lambda data: "EEPROM_HandDetectTime"],
+    [[370, 2], "EEPROM_SwitchOffInterval", lambda data: "EEPROM_SwitchOffInterval"],
+    [[383, None], "EEPROM_ConfigEnd", lambda data: "EEPROM_ConfigEnd"],
+    [[512, 12], "EEPROM_DeviceName", lambda data: "EEPROM_DeviceName"],
+    [[528, 7], "EEPROM_DevicePassword", lambda data: "EEPROM_DevicePassword"],
+    [[535, 7], "EEPROM_Password", lambda data: "EEPROM_Password"],
+    [[594, 1], "EEPROM_FlowRate", lambda data: "EEPROM_FlowRate"],
+    [[606, 1], "EEPROM_SensorExpertMode", lambda data: "EEPROM_SensorExpertMode"],
+    [[768, 112], "EEPROM_CalendarStart", lambda data: "EEPROM_CalendarStart"],
+    [[880, None], "EEPROM_CalendarEnd", lambda data: "EEPROM_CalendarEnd"],
+    [[896, 8], "EEPROM_NeedBased", lambda data: "EEPROM_NeedBased"],
+]
 
 
-
-cmd_queries: dict[str, Queue[bytes]] = {
-    DEVICE_INFO_CHARACTERISTIC: Queue(),
-    DEVICE_CONFIG_CHARACTERISTIC: Queue(),
-    SSC_CHARACTERISTIC: Queue()
+cmd_queries: dict[str, tuple[bytes, Queue[bytes]]] = {
+    DEVICE_INFO_CHARACTERISTIC: (b"", Queue()),
+    DEVICE_CONFIG_CHARACTERISTIC: (b"", Queue()),
+    SSC_CHARACTERISTIC: (b"", Queue())
 }
+
+def extract_eeprom(data: bytes, starting_address: int = 108):
+    print(f"Starting extraction at address: {starting_address}")
+    for entry in EEPROM_MAP:
+        address, length, name, parser = entry[0][0], entry[0][1], entry[1], entry[2]
+        # Check if segment is longer than the available data
+        # Also check if the segment could have partial data within the available range
+        if length is not None and address + length > starting_address + len(data):
+            print(f"Segment for {name} at address {address} exceeds data length")
+            break
+        if starting_address <= address:
+            if length is None:
+                print(f"Unknown segment for {name} at address {address}")
+                continue
+            segment_begin = address - starting_address
+            segment_end = segment_begin + length
+            segment_data = data[segment_begin:segment_end]
+            print(f"Extracting {name} at address {address}: {segment_data.hex(" ")}")
+            # Here you would add the actual extraction logic based on the parser and data
+            print(parser(segment_data))
+
+def generate_cmds_for_eeprom_dump(start: int = 0x0000, end: int = 0xFFFF) -> list[bytes]:
+    CHUNK_SIZE = 16
+    cmds = []
+    for address in range(start, end, CHUNK_SIZE):  # Assuming 16-byte chunks
+        cmd = build_read_request(address, CHUNK_SIZE)
+        cmds.append(cmd)
+    return cmds
 
 def parse_reset_reason(reason: int) -> str:
     flags = []
@@ -236,7 +265,8 @@ def parse_notify_response(characteristic: str, data: bytes):
     payload = data[2:]
     if cmd_queries.get(characteristic) is None:
         return None
-    original_request = cmd_queries.get(characteristic).get()
+    original_request = cmd_queries.get(characteristic)[0]
+    cmd_queries.get(characteristic)[0] = b""
     if characteristic == DEVICE_INFO_CHARACTERISTIC:
         if command == CMD_READ_ARRAY:
             """Request: Payload[0] = Index"""
@@ -498,12 +528,22 @@ def query_device(device: simplepyble.Peripheral):
         device.notify(SERVICE_UUID, SSC_CHARACTERISTIC, lambda data: print(f"SSC Notification: {data.hex(' ')}\nParsed: {parse_notify_response(SSC_CHARACTERISTIC, data)}"))
         print("Notification handler set up")
 
-        cmd_queries[SSC_CHARACTERISTIC].put(build_read_array_request(0x08, 8))
-        device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, build_read_array_request(0x08, 8))
+        cmd_queries[SSC_CHARACTERISTIC][0] = build_read_array_request(0x08, 8)
+        device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, cmd_queries[SSC_CHARACTERISTIC][0])
         print("Read request sent")
 
-        for i in range(5):
-            print(f"{i}: Waiting for notifications...")
+        eeprom_cmds = generate_cmds_for_eeprom_dump()
+        for cmd in eeprom_cmds:
+            cmd_queries[SSC_CHARACTERISTIC][1].put(cmd)
+
+        while not cmd_queries[SSC_CHARACTERISTIC][1].empty():
+            if cmd_queries[SSC_CHARACTERISTIC][0] == b"":
+                print("Received previous response, sending next command...")
+                cmd = cmd_queries[SSC_CHARACTERISTIC][1].get()
+                cmd_queries[SSC_CHARACTERISTIC][0] = cmd
+                device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, cmd_queries[SSC_CHARACTERISTIC][0])
+            else:
+                print(f"Waiting for previous command to be processed... | {cmd_queries[SSC_CHARACTERISTIC][1].qsize()} Waiting")
             time.sleep(1)
 
     else:
