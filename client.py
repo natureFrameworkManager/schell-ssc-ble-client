@@ -8,8 +8,10 @@ from queue import Queue
 SCAN_DURATION = 2
 SCAN_DEBUG_SSC = False
 SCAN_SHOW_UNKNOWN = False
-DEBUG_BYTES = True
+DEBUG_BYTES = False
 SHOW_TELEMETRY = False
+DEBUG_EEPROM = False
+WARNINGS_EEPROM = False
 
 SERVICE_UUID                    = "89ce0100-56b1-40c1-be09-887f3c723d22"
 DEVICE_INFO_CHARACTERISTIC      = "89ce0101-56b1-40c1-be09-887f3c723d22"
@@ -140,27 +142,35 @@ cmd_queries: dict[str, tuple[bytes, Queue[bytes]]] = {
 }
 
 def extract_eeprom(data: bytes, starting_address: int = 108):
-    print(f"Starting extraction at address: {starting_address}")
+    found_fields = {}
+    if DEBUG_EEPROM:
+        print(f"Starting extraction at address: {starting_address}")
     for entry in EEPROM_MAP:
         address, length, name, parser = entry[0][0], entry[0][1], entry[1], entry[2]
         # Check if segment is longer than the available data
         # Also check if the segment could have partial data within the available range
         if length is not None and address + length > starting_address + len(data):
-            print(f"Segment for {name} at address {address} exceeds data length")
+            if WARNINGS_EEPROM:
+                print(f"Segment for {name} at address {address} exceeds data length")
             break
         if starting_address <= address:
             if length is None:
-                print(f"Unknown segment for {name} at address {address}")
+                if WARNINGS_EEPROM:
+                    print(f"Unknown segment for {name} at address {address}")
                 continue
             segment_begin = address - starting_address
             segment_end = segment_begin + length
             segment_data = data[segment_begin:segment_end]
-            print(f"Extracting {name} at address {address}: {segment_data.hex(" ")}")
+            if DEBUG_EEPROM:
+                print(f"Extracting {name} at address {address}: {segment_data.hex(" ")}")
             # Here you would add the actual extraction logic based on the parser and data
             try:
-                print(f"{name} Parsed: {parser(segment_data)}")
+                if DEBUG_EEPROM:
+                    print(f"{name} Parsed: {parser(segment_data)}")
+                found_fields[name] = parser(segment_data)
             except Exception as e:
                 print(f"Error parsing {name} at address {address}: {e}")
+    return found_fields if found_fields else "no segment extracted"
 
 def generate_cmds_for_eeprom_dump(start: int = 0x0000, end: int = 0xFFFF, overlap: int = 0) -> list[bytes]:
     CHUNK_SIZE = 16
@@ -375,6 +385,8 @@ def parse_notify_response(characteristic: str, data: bytes):
                 return get_eeprom_stats(payload, original_address)
             elif 0x0400 <= original_address <= 0x09FF:
                 return get_eeprom_event_history(payload, original_address)
+            else:
+                return "unknown eeprom address: " + hex(original_address)
             return "read"
         if command == CMD_DIG_READ_BYTE:
             """Request: Request[2] = Address, Request[3] = Value"""
@@ -684,6 +696,11 @@ def output_info_notification(data: bytes):
     parsed = parse_notify_response(DEVICE_INFO_CHARACTERISTIC, data)
     print(f"Parsed: {parsed}")
 
+def output_ssc_notification(data: bytes):
+    print(f"SSC Notification: {data.hex(' ')}")
+    parsed = parse_notify_response(SSC_CHARACTERISTIC, data)
+    print(f"Parsed: {parsed}")
+
 def query_device(device: simplepyble.Peripheral):
     print(f"Querying device: {device.identifier()} [{device.address()}]")
     if device.is_connected():
@@ -696,7 +713,7 @@ def query_device(device: simplepyble.Peripheral):
         print("    Device is now connected")
 
         device.notify(SERVICE_UUID, DEVICE_INFO_CHARACTERISTIC, output_info_notification)
-        device.notify(SERVICE_UUID, SSC_CHARACTERISTIC, lambda data: print(f"SSC Notification: {data.hex(' ')}\nParsed: {parse_notify_response(SSC_CHARACTERISTIC, data)}"))
+        device.notify(SERVICE_UUID, SSC_CHARACTERISTIC, output_ssc_notification)
         print("Notification handler set up")
 
         # cmd_queries[SSC_CHARACTERISTIC] = (build_read_array_request(0x00, 0xFF), cmd_queries[SSC_CHARACTERISTIC][1])
@@ -713,14 +730,16 @@ def query_device(device: simplepyble.Peripheral):
 
         while not cmd_queries[SSC_CHARACTERISTIC][1].empty():
             if cmd_queries[SSC_CHARACTERISTIC][0] == b"":
-                print("---\nReceived previous response, sending next command...")
+                # print("---\nReceived previous response, sending next command...")
                 cmd = cmd_queries[SSC_CHARACTERISTIC][1].get()
                 cmd_queries[SSC_CHARACTERISTIC] = (cmd, cmd_queries[SSC_CHARACTERISTIC][1])
                 device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, cmd_queries[SSC_CHARACTERISTIC][0])
-            else:
+            elif False:
                 print(f"Waiting for previous command to be processed... | {cmd_queries[SSC_CHARACTERISTIC][1].qsize()} Waiting")
-            time.sleep(0.1)
-        time.sleep(1)
+                time.sleep(0.1)
+            else:
+                time.sleep(0.05)
+        time.sleep(1) # Wait for the last notification to be processed
 
     else:
         print("    Device is not connected")
