@@ -552,19 +552,23 @@ def query_device(device: simplepyble.Peripheral):
         # device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, cmd_queries[SSC_CHARACTERISTIC][0])
         # print("Read request sent")
 
-        eeprom_cmds = generate_cmds_for_array_dimp(0x08, 0xff)
+        eeprom_cmds = generate_cmds_for_eeprom_dump(0x0000, 0xFFFF)
         for cmd in eeprom_cmds:
-            cmd_queries[SSC_CHARACTERISTIC][1].put(cmd)
+            cmd_queries[DEVICE_CONFIG_CHARACTERISTIC][1].put(cmd)
+        
+        # array_cmds = generate_cmds_for_array_dimp(0x08, 0xff)
+        # for cmd in array_cmds:
+        #     cmd_queries[SSC_CHARACTERISTIC][1].put(cmd)
 
-        while not cmd_queries[SSC_CHARACTERISTIC][1].empty():
-            if cmd_queries[SSC_CHARACTERISTIC][0] == b"" or True:
+        while not cmd_queries[DEVICE_CONFIG_CHARACTERISTIC][1].empty():
+            if cmd_queries[DEVICE_CONFIG_CHARACTERISTIC][0] == b"" or True:
                 print("---\nReceived previous response, sending next command...")
-                cmd = cmd_queries[SSC_CHARACTERISTIC][1].get()
-                cmd_queries[SSC_CHARACTERISTIC] = (cmd, cmd_queries[SSC_CHARACTERISTIC][1])
-                device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, cmd_queries[SSC_CHARACTERISTIC][0])
+                cmd = cmd_queries[DEVICE_CONFIG_CHARACTERISTIC][1].get()
+                cmd_queries[DEVICE_CONFIG_CHARACTERISTIC] = (cmd, cmd_queries[DEVICE_CONFIG_CHARACTERISTIC][1])
+                device.write_command(SERVICE_UUID, DEVICE_CONFIG_CHARACTERISTIC, cmd_queries[DEVICE_CONFIG_CHARACTERISTIC][0])
             else:
-                print(f"Waiting for previous command to be processed... | {cmd_queries[SSC_CHARACTERISTIC][1].qsize()} Waiting")
-            time.sleep(1)
+                print(f"Waiting for previous command to be processed... | {cmd_queries[DEVICE_CONFIG_CHARACTERISTIC][1].qsize()} Waiting")
+            time.sleep(0.1)
         time.sleep(1)
 
     else:
