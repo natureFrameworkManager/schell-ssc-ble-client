@@ -1,0 +1,33 @@
+[Unit]
+Description=Schell SSC BLE presence and state recorder
+Documentation=file:/opt/schell-ssc-ble-client/deploy/README.md
+After=bluetooth.target dbus.service
+Wants=bluetooth.target
+
+[Service]
+Type=simple
+User=ssc-recorder
+Group=ssc-recorder
+SupplementaryGroups=bluetooth
+WorkingDirectory=/opt/schell-ssc-ble-client
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/schell-ssc-ble-client/.venv/bin/python -m ssc.recorder --config /etc/ssc-recorder/recorder.toml
+Restart=on-failure
+RestartSec=15
+TimeoutStopSec=30
+KillSignal=SIGTERM
+
+StateDirectory=ssc-recorder
+StateDirectoryMode=0700
+ConfigurationDirectory=ssc-recorder
+ConfigurationDirectoryMode=0750
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/ssc-recorder
+# Do not enable PrivateDevices: BlueZ/D-Bus access is required.
+
+[Install]
+WantedBy=multi-user.target

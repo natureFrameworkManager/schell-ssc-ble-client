@@ -1,0 +1,33 @@
+# SSC recorder configuration.
+#
+# Devices are discovered dynamically.  Do not list device addresses here: a
+# device is added to the database the first time it is seen and is recognised
+# by its BLE address afterwards.
+
+[recorder]
+interval_s = 30
+scan_duration_s = 5
+offline_after_misses = 3
+max_query_attempts = 3
+
+# A full 16 KiB EEPROM dump takes a while and may exceed the scan interval.
+query_timeout_s = 300
+request_timeout_s = 5
+info_settle_s = 2
+
+# 0 = query only once per offline -> online transition.  Set a positive value
+# if you also want periodic refreshes while another client keeps a device on.
+requery_interval_s = 0
+
+database = "/var/lib/ssc-recorder/ssc.sqlite3"
+adapter = "hci0"
+record_empty_scans = false
+
+# Record one presence row for every successful scan.  Use "session" to keep
+# only the first/last scan of each online period.
+presence_sample_mode = "every_scan"
+
+eeprom_start = 0x0000
+eeprom_end = 0x3FFF
+redact_secrets = true
+log_level = "INFO"

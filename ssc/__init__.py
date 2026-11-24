@@ -7,10 +7,11 @@ Layers, from bottom to top (imports only ever point downwards):
         advertisement, telemetry, firmware, bits, stats, eeprom
         notifications
         ble.tracker, ble.session
-        cli.main, cli.display, cli.prompts
+        db.models, db.engine, db.repository
+        recorder.*, cli.main, cli.display, cli.prompts
 
-Only :mod:`ssc.ble` imports ``simplepyble``; only :mod:`ssc.cli` writes to
-stdout or reads from stdin.
+Only :mod:`ssc.ble` imports ``simplepyble``; only :mod:`ssc.cli` and
+:mod:`ssc.recorder.runner` write to stdout or read from stdin.
 """
 
 __all__ = [
@@ -19,8 +20,11 @@ __all__ = [
     "codecs",
     "config",
     "constants",
+    "db",
+    "eeprom",
     "firmware",
     "notifications",
+    "recorder",
     "stats",
     "telemetry",
     "types",

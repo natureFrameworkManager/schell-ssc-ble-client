@@ -1,1 +1,2 @@
 simplepyble>=1.4.0
+sqlmodel>=0.0.22

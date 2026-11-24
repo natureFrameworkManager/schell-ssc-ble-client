@@ -16,6 +16,7 @@ from ssc.constants import (
     CMD_DIG_WRITE_BIT,
     CMD_READ_ARRAY,
     CMD_READ_EE_BY_ADDR,
+    CMD_READ_MODULE_INFO,
     CMD_WRITE_EE_BY_ADDR,
     EEPROM_ADDRESS_SPACE_END,
     EEPROM_CHUNK_SIZE,
@@ -85,6 +86,16 @@ def build_write_bit_request(bit_address: int, value: int) -> bytes:
     payload = bytes((bit_address, value))
     logger.debug("Write bit request payload: %s", payload.hex(" "))
     return build_request(CMD_DIG_WRITE_BIT, payload)
+
+
+def build_module_info_request() -> bytes:
+    """Build a module-information request.
+
+    Some firmware revisions answer this command with the app version and
+    serial; others simply ignore it.  The recorder treats a missing answer as
+    an optional partial result.
+    """
+    return build_request(CMD_READ_MODULE_INFO, b"")
 
 
 def build_read_array_request(index: int, length: int) -> bytes:

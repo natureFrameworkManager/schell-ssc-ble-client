@@ -131,6 +131,10 @@ def _ssc_write_bit(payload: bytes, request: bytes, options: Options) -> object:
 def _ssc_read_array(payload: bytes, request: bytes, options: Options) -> object:
     """Request: ``[2]`` array index, ``[3]`` length."""
     index = request[2]
+    if index == 0x00:
+        return parse_telemetry(payload[1:])
+    if index == 0x01:
+        return parse_firmware(payload[1:])
     if index == 0x06:
         return parse_lifetime_stats(payload[1:])
     if index == 0x0B:

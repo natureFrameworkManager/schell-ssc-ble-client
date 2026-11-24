@@ -7,10 +7,14 @@ name = "schell-ssc-ble-client"
 version = "0.1.0"
 description = "BLE client for Schell SSC (SE2) sanitary fittings"
 requires-python = ">=3.12"
-dependencies = ["simplepyble>=1.4.0"]
+dependencies = [
+    "simplepyble>=1.4.0",
+    "sqlmodel>=0.0.22",
+]
 
 [project.scripts]
 ssc = "ssc.cli.main:main"
+ssc-recorder = "ssc.recorder.runner:main"
 
 [tool.setuptools.packages.find]
 include = ["ssc*"]

@@ -9,6 +9,7 @@ queue until the device has answered the current one.
 
 from __future__ import annotations
 
+import time
 from collections.abc import Iterable
 from dataclasses import dataclass, field
 from queue import Queue
@@ -21,6 +22,7 @@ class PendingRequest:
 
     request: bytes = b""
     queue: Queue[bytes] = field(default_factory=Queue)
+    sent_at: float | None = None
 
 
 class RequestTracker:
@@ -49,6 +51,7 @@ class RequestTracker:
             if pending.request or pending.queue.empty():
                 return None
             pending.request = pending.queue.get_nowait()
+            pending.sent_at = time.monotonic()
             return pending.request
 
     def take_response_request(self, characteristic: str) -> bytes | None:
@@ -56,4 +59,30 @@ class RequestTracker:
         with self._lock:
             pending = self._pending[characteristic]
             request, pending.request = pending.request, b""
+            pending.sent_at = None
             return request or None
+
+    def has_in_flight(self, characteristic: str) -> bool:
+        with self._lock:
+            return bool(self._pending[characteristic].request)
+
+    def is_idle(self, characteristic: str) -> bool:
+        with self._lock:
+            pending = self._pending[characteristic]
+            return not pending.request and pending.queue.empty()
+
+    def expire_in_flight(
+        self, characteristic: str, timeout_s: float
+    ) -> bytes | None:
+        """Drop an in-flight request that has not been answered in time."""
+        if timeout_s <= 0:
+            return None
+        with self._lock:
+            pending = self._pending[characteristic]
+            if not pending.request or pending.sent_at is None:
+                return None
+            if time.monotonic() - pending.sent_at < timeout_s:
+                return None
+            expired, pending.request = pending.request, b""
+            pending.sent_at = None
+            return expired
