@@ -59,6 +59,49 @@ sudo -u ssc-recorder \
     -m ssc.recorder --config /etc/ssc-recorder/recorder.toml --status
 ```
 
+## Running for testing (no full install)
+
+The package is installed in editable ("dev") mode by `pip install -e .`, so any
+change under `ssc/` is picked up live: no reinstall is needed. There is no
+separate script to copy — the recorder is launched as a module through
+`ssc/recorder/__main__.py`, which calls `main()` in `ssc/recorder/runner.py`.
+
+From the repository root, without touching the system directories:
+
+```bash
+# Module form — the same path the systemd unit uses.
+.venv/bin/python -m ssc.recorder --help
+
+# The console script the editable install already created in the venv.
+.venv/bin/ssc-recorder --help
+```
+
+The default config (`/etc/ssc-recorder/recorder.toml`) and database
+(`/var/lib/ssc-recorder/ssc.sqlite3`) point at production paths that need root
+and a real install. Override them for local testing:
+
+```bash
+# Dry run: scan and log SSC devices, no database writes at all.
+.venv/bin/python -m ssc.recorder --dry-run --once --log-level DEBUG
+
+# Real run, one cycle only, writing to a local database file.
+.venv/bin/python -m ssc.recorder \
+    --database ./ssc-test.sqlite3 --once --log-level DEBUG
+
+# Inspect what was recorded in that local database.
+.venv/bin/python -m ssc.recorder --database ./ssc-test.sqlite3 --status
+```
+
+Useful flags: `--once`, `--dry-run`, `--status`, `--database`, `--config`,
+`--interval`, `--scan-duration`, `--adapter`, `--log-level`.
+
+Notes:
+
+- `--dry-run` skips the database entirely, so it is the safest first smoke test.
+- Scans still need BLE adapter access via BlueZ/D-Bus; `--dry-run` does not
+  bypass that.
+- If the adapter is not `hci0`, pass `--adapter <name-or-address>`.
+
 ## systemd
 
 ```bash
@@ -88,6 +131,42 @@ simplest fallback but is not preferred.
 - Full EEPROM dumps contain password fields. The database and backups should be
   owner-only. `redact_secrets` removes them from parsed config values, but the
   raw image still contains them.
+
+## Web UI and API
+
+The read-only web service runs separately from the recorder:
+
+```bash
+.venv/bin/pip install -e '.[web]'
+
+sudo install -m 0640 -o root -g ssc-recorder \
+    deploy/ssc-web.toml /etc/ssc-web.toml
+sudo install -m 0644 deploy/ssc-web.service \
+    /etc/systemd/system/ssc-web.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now ssc-web
+journalctl -u ssc-web -f
+```
+
+The service binds to `127.0.0.1:8000`. Put nginx/Caddy with TLS and
+authentication in front before exposing it beyond localhost. An example is in
+`deploy/nginx-ssc.conf.example`.
+
+The web process opens the recorder database with `PRAGMA query_only=ON` and
+never writes to it. It runs as the recorder user in the example service so that
+SQLite WAL and `-shm` access works. If you split the users, grant the web user
+access to the database directory and WAL files.
+
+If `basic_auth_user` is configured in `/etc/ssc-web.toml`, create
+`/etc/ssc-web.env` with owner-only permissions and set
+`SSC_WEB_PASSWORD=...` there. The service reads it through `EnvironmentFile`.
+Prefer TLS and authentication at nginx/Caddy in front of the service.
+
+### Testing the web app without installing it
+
+See [`docs/WEB_TESTING.md`](../docs/WEB_TESTING.md) for source-run commands,
+database-copy instructions, manual API checks and a browser test checklist.
+No web test suite is committed.
 
 ## Backup
 

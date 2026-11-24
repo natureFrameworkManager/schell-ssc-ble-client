@@ -12,12 +12,23 @@ dependencies = [
     "sqlmodel>=0.0.22",
 ]
 
+[project.optional-dependencies]
+web = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "jinja2>=3.1",
+]
+
 [project.scripts]
 ssc = "ssc.cli.main:main"
 ssc-recorder = "ssc.recorder.runner:main"
+ssc-web = "ssc.web.__main__:main"
 
 [tool.setuptools.packages.find]
 include = ["ssc*"]
+
+[tool.setuptools.package-data]
+"ssc.web" = ["templates/*.html", "static/*.css", "static/*.js"]
 
 [tool.ruff]
 target-version = "py312"
@@ -25,3 +36,7 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# FastAPI dependency injection uses call expressions in argument defaults.
+"ssc/web/routers/*.py" = ["B008"]

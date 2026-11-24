@@ -1,0 +1,33 @@
+{% set root = request.scope.get('root_path', '') %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}SSC Recorder{% endblock %}</title>
+  <link rel="stylesheet" href="{{ root }}/static/app.css">
+</head>
+<body data-page="{{ page }}" data-device-id="{{ device_id|default('') }}" data-root="{{ root }}">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="{{ root }}/">SSC<span>Recorder</span></a>
+      <div class="topbar-right">
+        <span id="health-badge" class="badge badge-muted">checking…</span>
+        <span class="version">v{{ version }}</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="global-error" class="alert alert-error hidden" role="alert"></div>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    Read-only recorder history · timestamps are UTC unless marked as device time
+  </footer>
+
+  <script src="{{ root }}/static/charts.js" defer></script>
+  <script src="{{ root }}/static/app.js" defer></script>
+</body>
+</html>

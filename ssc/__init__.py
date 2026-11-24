@@ -8,10 +8,11 @@ Layers, from bottom to top (imports only ever point downwards):
         notifications
         ble.tracker, ble.session
         db.models, db.engine, db.repository
-        recorder.*, cli.main, cli.display, cli.prompts
+        recorder.*, web.*, cli.main, cli.display, cli.prompts
 
-Only :mod:`ssc.ble` imports ``simplepyble``; only :mod:`ssc.cli` and
-:mod:`ssc.recorder.runner` write to stdout or read from stdin.
+Only :mod:`ssc.ble` imports ``simplepyble``; only :mod:`ssc.cli`,
+:mod:`ssc.recorder.runner` and :mod:`ssc.web` write to stdout or read from
+stdin.
 """
 
 __all__ = [
@@ -28,4 +29,5 @@ __all__ = [
     "stats",
     "telemetry",
     "types",
+    "web",
 ]

@@ -1,0 +1,30 @@
+[Unit]
+Description=SSC recorder web UI and API
+Documentation=file:/opt/schell-ssc-ble-client/deploy/README.md
+After=network.target ssc-recorder.service
+Wants=ssc-recorder.service
+
+[Service]
+Type=simple
+# The web process reads the recorder database and the WAL index. Running it as
+# the recorder user is the simplest reliable setup for SQLite WAL access.
+User=ssc-recorder
+Group=ssc-recorder
+WorkingDirectory=/opt/schell-ssc-ble-client
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=SSC_WEB_CONFIG=/etc/ssc-web.toml
+EnvironmentFile=-/etc/ssc-web.env
+ExecStart=/opt/schell-ssc-ble-client/.venv/bin/uvicorn \
+    ssc.web.app:app --host 127.0.0.1 --port 8000 --workers 1
+Restart=always
+RestartSec=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/ssc-recorder
+# Do not expose port 8000 directly. Put nginx/Caddy in front for TLS/auth.
+
+[Install]
+WantedBy=multi-user.target

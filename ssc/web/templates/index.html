@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · SSC Recorder{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <p class="eyebrow">SSC BLE recorder</p>
+    <h1>Device overview</h1>
+    <p class="muted">
+      Online history and the latest timestamped device state. The recorder
+      queries a device once per online period; “captured” is not a live BLE read.
+    </p>
+  </div>
+  <div class="health-panel" id="health-panel">
+    <div class="health-item">
+      <span class="health-label">Recorder</span>
+      <strong id="health-recorder">—</strong>
+    </div>
+    <div class="health-item">
+      <span class="health-label">Database</span>
+      <strong id="health-database">—</strong>
+    </div>
+    <div class="health-item">
+      <span class="health-label">Last found scan</span>
+      <strong id="health-last-scan">—</strong>
+    </div>
+    <div class="health-item">
+      <span class="health-label">Devices</span>
+      <strong id="health-device-count">—</strong>
+    </div>
+  </div>
+</section>
+
+<div class="toolbar">
+  <label class="checkbox">
+    <input type="checkbox" id="online-only"> only online
+  </label>
+  <input type="search" id="device-search" placeholder="Search name, address, serial…">
+  <button class="button" id="refresh-devices" type="button">Refresh</button>
+</div>
+
+<section id="device-grid" class="device-grid" aria-live="polite"></section>
+<div id="empty-state" class="empty hidden">
+  <h2>No devices recorded yet</h2>
+  <p>
+    Start the recorder and let it discover an SSC device. The web UI reads the
+    same database and will show the device as soon as it is recorded.
+  </p>
+</div>
+{% endblock %}

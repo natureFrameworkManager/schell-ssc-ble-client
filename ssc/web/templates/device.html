@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Device · SSC Recorder{% endblock %}
+{% block content %}
+<div class="device-heading">
+  <a class="back-link" href="{{ request.scope.get('root_path', '') }}/">← All devices</a>
+  <div class="device-title-row">
+    <div>
+      <p class="eyebrow" id="device-address">loading…</p>
+      <h1 id="device-title">Device</h1>
+      <p class="muted" id="device-product"></p>
+    </div>
+    <span id="device-state" class="badge badge-muted">loading</span>
+  </div>
+  <div class="summary-strip" id="device-summary"></div>
+</div>
+
+<div class="range-toolbar">
+  <div class="segmented" role="group" aria-label="History range">
+    <button type="button" data-range="1">24h</button>
+    <button type="button" data-range="7">7d</button>
+    <button type="button" data-range="30" class="active">30d</button>
+    <button type="button" data-range="90">90d</button>
+  </div>
+  <span id="range-label" class="muted"></span>
+  <button type="button" class="button" id="refresh-device">Refresh</button>
+</div>
+
+<nav class="tabs" role="tablist">
+  <button type="button" role="tab" data-tab="presence" class="active">Presence</button>
+  <button type="button" role="tab" data-tab="current">Current state</button>
+  <button type="button" role="tab" data-tab="history">History</button>
+  <button type="button" role="tab" data-tab="snapshots">Snapshots</button>
+  <button type="button" role="tab" data-tab="compare">Compare</button>
+</nav>
+
+<section class="tab-panel active" data-panel="presence">
+  <div id="presence-summary" class="metric-grid"></div>
+  <div class="card">
+    <div class="card-head">
+      <h2>Online history</h2>
+      <span class="muted">green = online · grey = known off · hatched = observation gap</span>
+    </div>
+    <div id="presence-timeline" class="presence-timeline"></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Intervals</h2></div>
+    <div class="table-wrap">
+      <table id="presence-table">
+        <thead>
+          <tr>
+            <th>Kind</th><th>Started</th><th>Ended</th><th>Duration</th>
+            <th>Open</th><th>Observed</th><th>Query</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" data-panel="current">
+  <div id="current-state"></div>
+</section>
+
+<section class="tab-panel" data-panel="history">
+  <div class="chart-grid">
+    <div class="card">
+      <div class="card-head"><h2>Battery voltage</h2><span class="muted">V</span></div>
+      <canvas id="battery-voltage-chart" height="220"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Battery level</h2><span class="muted">%</span></div>
+      <canvas id="battery-level-chart" height="220"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Today counters</h2><span class="muted">count / stagnation count</span></div>
+      <canvas id="counter-chart" height="220"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Daily consumption</h2><span class="muted">litres</span></div>
+      <canvas id="daily-chart" height="220"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Config changes</h2></div>
+    <div class="table-wrap">
+      <table id="config-change-table">
+        <thead><tr><th>When</th><th>Field</th><th>Old</th><th>New</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" data-panel="snapshots">
+  <div class="card">
+    <div class="card-head"><h2>Snapshots</h2><span class="muted" id="snapshot-count"></span></div>
+    <div id="snapshot-list" class="snapshot-list"></div>
+  </div>
+  <div class="card" id="snapshot-detail-card">
+    <div class="card-head"><h2>Snapshot detail</h2></div>
+    <div id="snapshot-detail" class="muted">Select a snapshot.</div>
+  </div>
+</section>
+
+<section class="tab-panel" data-panel="compare">
+  <div class="card">
+    <div class="card-head"><h2>Compare snapshots</h2></div>
+    <div class="compare-controls">
+      <label>Base <select id="compare-base"></select></label>
+      <label>Target <select id="compare-target"></select></label>
+      <button type="button" class="button" id="compare-button">Compare</button>
+    </div>
+    <div id="compare-result" class="muted">Choose two snapshots with stored EEPROM images.</div>
+  </div>
+</section>
+{% endblock %}
