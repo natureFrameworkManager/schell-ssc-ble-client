@@ -113,6 +113,14 @@ def generate_cmds_for_eeprom_dump(start: int = 0x0000, end: int = 0xFFFF, overla
         cmds.append(cmd)
     return cmds
 
+def generate_cmds_for_array_dimp(start: int = 0x00, end: int = 0xFF, overlap: int = 0) -> list[bytes]:
+    CHUNK_SIZE = 1
+    cmds = []
+    for index in range(start, end, CHUNK_SIZE - overlap):
+        cmd = build_read_array_request(index, CHUNK_SIZE)
+        cmds.append(cmd)
+    return cmds
+
 def parse_reset_reason(reason: int) -> str:
     flags = []
     mapping = [
@@ -540,16 +548,16 @@ def query_device(device: simplepyble.Peripheral):
         device.notify(SERVICE_UUID, SSC_CHARACTERISTIC, lambda data: print(f"SSC Notification: {data.hex(' ')}\nParsed: {parse_notify_response(SSC_CHARACTERISTIC, data)}"))
         print("Notification handler set up")
 
-        cmd_queries[SSC_CHARACTERISTIC] = (build_read_array_request(0x08, 8), cmd_queries[SSC_CHARACTERISTIC][1])
-        device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, cmd_queries[SSC_CHARACTERISTIC][0])
-        print("Read request sent")
+        # cmd_queries[SSC_CHARACTERISTIC] = (build_read_array_request(0x00, 0xFF), cmd_queries[SSC_CHARACTERISTIC][1])
+        # device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, cmd_queries[SSC_CHARACTERISTIC][0])
+        # print("Read request sent")
 
-        eeprom_cmds = generate_cmds_for_eeprom_dump(0, 0xFFFF)
+        eeprom_cmds = generate_cmds_for_array_dimp(0x08, 0xff)
         for cmd in eeprom_cmds:
             cmd_queries[SSC_CHARACTERISTIC][1].put(cmd)
 
         while not cmd_queries[SSC_CHARACTERISTIC][1].empty():
-            if cmd_queries[SSC_CHARACTERISTIC][0] == b"":
+            if cmd_queries[SSC_CHARACTERISTIC][0] == b"" or True:
                 print("---\nReceived previous response, sending next command...")
                 cmd = cmd_queries[SSC_CHARACTERISTIC][1].get()
                 cmd_queries[SSC_CHARACTERISTIC] = (cmd, cmd_queries[SSC_CHARACTERISTIC][1])
@@ -557,6 +565,7 @@ def query_device(device: simplepyble.Peripheral):
             else:
                 print(f"Waiting for previous command to be processed... | {cmd_queries[SSC_CHARACTERISTIC][1].qsize()} Waiting")
             time.sleep(1)
+        time.sleep(1)
 
     else:
         print("    Device is not connected")
