@@ -1,0 +1,1015 @@
+Using adapter: hci0 [C8:94:02:6B:CE:AA]
+Scan for 10 seconds
+Scan started
+Scan stopped
+Found 16 devices, including 1 SSC devices
+Found SSC device: SE2 [08:FD:52:39:36:E2]
+Raw advertisement data: 02 0a 42 61 64 20 31 00 00 00 00 00 00 00 01 02 02 00 3a
+{'device_type': 2, 'device_sub_type': 10, 'serial_display_name': b'Bad 1\x00\x00\x00\x00\x00\x00\x00', 'device_sub_sub_type': 2, 'battery_voltage_adv': 58, 'device_type_name': 'Waschtisch', 'device_subtype_name': 'Puris E²', 'device_subsubtype_high_name': '', 'device_subsubtype_low_name': 'HD-M', 'device_name': 'Bad 1', 'battery_voltage': 5.8, 'battery_level': 86}
+Select a SSC device(s) to connect to [split by comma]:
+0: SE2 [08:FD:52:39:36:E2]
+Enter choice: Connecting to SE2 [08:FD:52:39:36:E2]
+Querying device: SE2 [08:FD:52:39:36:E2]
+    Device is connected
+    Device is now connected
+Notification handler set up
+Read array request payload: 08 01
+Built request: 04 1a 08 01
+Read array request payload: 09 01
+Built request: 04 1a 09 01
+Read array request payload: 0a 01
+Built request: 04 1a 0a 01
+Read array request payload: 0b 01
+Built request: 04 1a 0b 01
+Read array request payload: 0c 01
+Built request: 04 1a 0c 01
+Read array request payload: 0d 01
+Built request: 04 1a 0d 01
+Read array request payload: 0e 01
+Built request: 04 1a 0e 01
+Read array request payload: 0f 01
+Built request: 04 1a 0f 01
+Read array request payload: 10 01
+Built request: 04 1a 10 01
+Read array request payload: 11 01
+Built request: 04 1a 11 01
+Read array request payload: 12 01
+Built request: 04 1a 12 01
+Read array request payload: 13 01
+Built request: 04 1a 13 01
+Read array request payload: 14 01
+Built request: 04 1a 14 01
+Read array request payload: 15 01
+Built request: 04 1a 15 01
+Read array request payload: 16 01
+Built request: 04 1a 16 01
+Read array request payload: 17 01
+Built request: 04 1a 17 01
+Read array request payload: 18 01
+Built request: 04 1a 18 01
+Read array request payload: 19 01
+Built request: 04 1a 19 01
+Read array request payload: 1a 01
+Built request: 04 1a 1a 01
+Read array request payload: 1b 01
+Built request: 04 1a 1b 01
+Read array request payload: 1c 01
+Built request: 04 1a 1c 01
+Read array request payload: 1d 01
+Built request: 04 1a 1d 01
+Read array request payload: 1e 01
+Built request: 04 1a 1e 01
+Read array request payload: 1f 01
+Built request: 04 1a 1f 01
+Read array request payload: 20 01
+Built request: 04 1a 20 01
+Read array request payload: 21 01
+Built request: 04 1a 21 01
+Read array request payload: 22 01
+Built request: 04 1a 22 01
+Read array request payload: 23 01
+Built request: 04 1a 23 01
+Read array request payload: 24 01
+Built request: 04 1a 24 01
+Read array request payload: 25 01
+Built request: 04 1a 25 01
+Read array request payload: 26 01
+Built request: 04 1a 26 01
+Read array request payload: 27 01
+Built request: 04 1a 27 01
+Read array request payload: 28 01
+Built request: 04 1a 28 01
+Read array request payload: 29 01
+Built request: 04 1a 29 01
+Read array request payload: 2a 01
+Built request: 04 1a 2a 01
+Read array request payload: 2b 01
+Built request: 04 1a 2b 01
+Read array request payload: 2c 01
+Built request: 04 1a 2c 01
+Read array request payload: 2d 01
+Built request: 04 1a 2d 01
+Read array request payload: 2e 01
+Built request: 04 1a 2e 01
+Read array request payload: 2f 01
+Built request: 04 1a 2f 01
+Read array request payload: 30 01
+Built request: 04 1a 30 01
+Read array request payload: 31 01
+Built request: 04 1a 31 01
+Read array request payload: 32 01
+Built request: 04 1a 32 01
+Read array request payload: 33 01
+Built request: 04 1a 33 01
+Read array request payload: 34 01
+Built request: 04 1a 34 01
+Read array request payload: 35 01
+Built request: 04 1a 35 01
+Read array request payload: 36 01
+Built request: 04 1a 36 01
+Read array request payload: 37 01
+Built request: 04 1a 37 01
+Read array request payload: 38 01
+Built request: 04 1a 38 01
+Read array request payload: 39 01
+Built request: 04 1a 39 01
+Read array request payload: 3a 01
+Built request: 04 1a 3a 01
+Read array request payload: 3b 01
+Built request: 04 1a 3b 01
+Read array request payload: 3c 01
+Built request: 04 1a 3c 01
+Read array request payload: 3d 01
+Built request: 04 1a 3d 01
+Read array request payload: 3e 01
+Built request: 04 1a 3e 01
+Read array request payload: 3f 01
+Built request: 04 1a 3f 01
+Read array request payload: 40 01
+Built request: 04 1a 40 01
+Read array request payload: 41 01
+Built request: 04 1a 41 01
+Read array request payload: 42 01
+Built request: 04 1a 42 01
+Read array request payload: 43 01
+Built request: 04 1a 43 01
+Read array request payload: 44 01
+Built request: 04 1a 44 01
+Read array request payload: 45 01
+Built request: 04 1a 45 01
+Read array request payload: 46 01
+Built request: 04 1a 46 01
+Read array request payload: 47 01
+Built request: 04 1a 47 01
+Read array request payload: 48 01
+Built request: 04 1a 48 01
+Read array request payload: 49 01
+Built request: 04 1a 49 01
+Read array request payload: 4a 01
+Built request: 04 1a 4a 01
+Read array request payload: 4b 01
+Built request: 04 1a 4b 01
+Read array request payload: 4c 01
+Built request: 04 1a 4c 01
+Read array request payload: 4d 01
+Built request: 04 1a 4d 01
+Read array request payload: 4e 01
+Built request: 04 1a 4e 01
+Read array request payload: 4f 01
+Built request: 04 1a 4f 01
+Read array request payload: 50 01
+Built request: 04 1a 50 01
+Read array request payload: 51 01
+Built request: 04 1a 51 01
+Read array request payload: 52 01
+Built request: 04 1a 52 01
+Read array request payload: 53 01
+Built request: 04 1a 53 01
+Read array request payload: 54 01
+Built request: 04 1a 54 01
+Read array request payload: 55 01
+Built request: 04 1a 55 01
+Read array request payload: 56 01
+Built request: 04 1a 56 01
+Read array request payload: 57 01
+Built request: 04 1a 57 01
+Read array request payload: 58 01
+Built request: 04 1a 58 01
+Read array request payload: 59 01
+Built request: 04 1a 59 01
+Read array request payload: 5a 01
+Built request: 04 1a 5a 01
+Read array request payload: 5b 01
+Built request: 04 1a 5b 01
+Read array request payload: 5c 01
+Built request: 04 1a 5c 01
+Read array request payload: 5d 01
+Built request: 04 1a 5d 01
+Read array request payload: 5e 01
+Built request: 04 1a 5e 01
+Read array request payload: 5f 01
+Built request: 04 1a 5f 01
+Read array request payload: 60 01
+Built request: 04 1a 60 01
+Read array request payload: 61 01
+Built request: 04 1a 61 01
+Read array request payload: 62 01
+Built request: 04 1a 62 01
+Read array request payload: 63 01
+Built request: 04 1a 63 01
+Read array request payload: 64 01
+Built request: 04 1a 64 01
+Read array request payload: 65 01
+Built request: 04 1a 65 01
+Read array request payload: 66 01
+Built request: 04 1a 66 01
+Read array request payload: 67 01
+Built request: 04 1a 67 01
+Read array request payload: 68 01
+Built request: 04 1a 68 01
+Read array request payload: 69 01
+Built request: 04 1a 69 01
+Read array request payload: 6a 01
+Built request: 04 1a 6a 01
+Read array request payload: 6b 01
+Built request: 04 1a 6b 01
+Read array request payload: 6c 01
+Built request: 04 1a 6c 01
+Read array request payload: 6d 01
+Built request: 04 1a 6d 01
+Read array request payload: 6e 01
+Built request: 04 1a 6e 01
+Read array request payload: 6f 01
+Built request: 04 1a 6f 01
+Read array request payload: 70 01
+Built request: 04 1a 70 01
+Read array request payload: 71 01
+Built request: 04 1a 71 01
+Read array request payload: 72 01
+Built request: 04 1a 72 01
+Read array request payload: 73 01
+Built request: 04 1a 73 01
+Read array request payload: 74 01
+Built request: 04 1a 74 01
+Read array request payload: 75 01
+Built request: 04 1a 75 01
+Read array request payload: 76 01
+Built request: 04 1a 76 01
+Read array request payload: 77 01
+Built request: 04 1a 77 01
+Read array request payload: 78 01
+Built request: 04 1a 78 01
+Read array request payload: 79 01
+Built request: 04 1a 79 01
+Read array request payload: 7a 01
+Built request: 04 1a 7a 01
+Read array request payload: 7b 01
+Built request: 04 1a 7b 01
+Read array request payload: 7c 01
+Built request: 04 1a 7c 01
+Read array request payload: 7d 01
+Built request: 04 1a 7d 01
+Read array request payload: 7e 01
+Built request: 04 1a 7e 01
+Read array request payload: 7f 01
+Built request: 04 1a 7f 01
+Read array request payload: 80 01
+Built request: 04 1a 80 01
+Read array request payload: 81 01
+Built request: 04 1a 81 01
+Read array request payload: 82 01
+Built request: 04 1a 82 01
+Read array request payload: 83 01
+Built request: 04 1a 83 01
+Read array request payload: 84 01
+Built request: 04 1a 84 01
+Read array request payload: 85 01
+Built request: 04 1a 85 01
+Read array request payload: 86 01
+Built request: 04 1a 86 01
+Read array request payload: 87 01
+Built request: 04 1a 87 01
+Read array request payload: 88 01
+Built request: 04 1a 88 01
+Read array request payload: 89 01
+Built request: 04 1a 89 01
+Read array request payload: 8a 01
+Built request: 04 1a 8a 01
+Read array request payload: 8b 01
+Built request: 04 1a 8b 01
+Read array request payload: 8c 01
+Built request: 04 1a 8c 01
+Read array request payload: 8d 01
+Built request: 04 1a 8d 01
+Read array request payload: 8e 01
+Built request: 04 1a 8e 01
+Read array request payload: 8f 01
+Built request: 04 1a 8f 01
+Read array request payload: 90 01
+Built request: 04 1a 90 01
+Read array request payload: 91 01
+Built request: 04 1a 91 01
+Read array request payload: 92 01
+Built request: 04 1a 92 01
+Read array request payload: 93 01
+Built request: 04 1a 93 01
+Read array request payload: 94 01
+Built request: 04 1a 94 01
+Read array request payload: 95 01
+Built request: 04 1a 95 01
+Read array request payload: 96 01
+Built request: 04 1a 96 01
+Read array request payload: 97 01
+Built request: 04 1a 97 01
+Read array request payload: 98 01
+Built request: 04 1a 98 01
+Read array request payload: 99 01
+Built request: 04 1a 99 01
+Read array request payload: 9a 01
+Built request: 04 1a 9a 01
+Read array request payload: 9b 01
+Built request: 04 1a 9b 01
+Read array request payload: 9c 01
+Built request: 04 1a 9c 01
+Read array request payload: 9d 01
+Built request: 04 1a 9d 01
+Read array request payload: 9e 01
+Built request: 04 1a 9e 01
+Read array request payload: 9f 01
+Built request: 04 1a 9f 01
+Read array request payload: a0 01
+Built request: 04 1a a0 01
+Read array request payload: a1 01
+Built request: 04 1a a1 01
+Read array request payload: a2 01
+Built request: 04 1a a2 01
+Read array request payload: a3 01
+Built request: 04 1a a3 01
+Read array request payload: a4 01
+Built request: 04 1a a4 01
+Read array request payload: a5 01
+Built request: 04 1a a5 01
+Read array request payload: a6 01
+Built request: 04 1a a6 01
+Read array request payload: a7 01
+Built request: 04 1a a7 01
+Read array request payload: a8 01
+Built request: 04 1a a8 01
+Read array request payload: a9 01
+Built request: 04 1a a9 01
+Read array request payload: aa 01
+Built request: 04 1a aa 01
+Read array request payload: ab 01
+Built request: 04 1a ab 01
+Read array request payload: ac 01
+Built request: 04 1a ac 01
+Read array request payload: ad 01
+Built request: 04 1a ad 01
+Read array request payload: ae 01
+Built request: 04 1a ae 01
+Read array request payload: af 01
+Built request: 04 1a af 01
+Read array request payload: b0 01
+Built request: 04 1a b0 01
+Read array request payload: b1 01
+Built request: 04 1a b1 01
+Read array request payload: b2 01
+Built request: 04 1a b2 01
+Read array request payload: b3 01
+Built request: 04 1a b3 01
+Read array request payload: b4 01
+Built request: 04 1a b4 01
+Read array request payload: b5 01
+Built request: 04 1a b5 01
+Read array request payload: b6 01
+Built request: 04 1a b6 01
+Read array request payload: b7 01
+Built request: 04 1a b7 01
+Read array request payload: b8 01
+Built request: 04 1a b8 01
+Read array request payload: b9 01
+Built request: 04 1a b9 01
+Read array request payload: ba 01
+Built request: 04 1a ba 01
+Read array request payload: bb 01
+Built request: 04 1a bb 01
+Read array request payload: bc 01
+Built request: 04 1a bc 01
+Read array request payload: bd 01
+Built request: 04 1a bd 01
+Read array request payload: be 01
+Built request: 04 1a be 01
+Read array request payload: bf 01
+Built request: 04 1a bf 01
+Read array request payload: c0 01
+Built request: 04 1a c0 01
+Read array request payload: c1 01
+Built request: 04 1a c1 01
+Read array request payload: c2 01
+Built request: 04 1a c2 01
+Read array request payload: c3 01
+Built request: 04 1a c3 01
+Read array request payload: c4 01
+Built request: 04 1a c4 01
+Read array request payload: c5 01
+Built request: 04 1a c5 01
+Read array request payload: c6 01
+Built request: 04 1a c6 01
+Read array request payload: c7 01
+Built request: 04 1a c7 01
+Read array request payload: c8 01
+Built request: 04 1a c8 01
+Read array request payload: c9 01
+Built request: 04 1a c9 01
+Read array request payload: ca 01
+Built request: 04 1a ca 01
+Read array request payload: cb 01
+Built request: 04 1a cb 01
+Read array request payload: cc 01
+Built request: 04 1a cc 01
+Read array request payload: cd 01
+Built request: 04 1a cd 01
+Read array request payload: ce 01
+Built request: 04 1a ce 01
+Read array request payload: cf 01
+Built request: 04 1a cf 01
+Read array request payload: d0 01
+Built request: 04 1a d0 01
+Read array request payload: d1 01
+Built request: 04 1a d1 01
+Read array request payload: d2 01
+Built request: 04 1a d2 01
+Read array request payload: d3 01
+Built request: 04 1a d3 01
+Read array request payload: d4 01
+Built request: 04 1a d4 01
+Read array request payload: d5 01
+Built request: 04 1a d5 01
+Read array request payload: d6 01
+Built request: 04 1a d6 01
+Read array request payload: d7 01
+Built request: 04 1a d7 01
+Read array request payload: d8 01
+Built request: 04 1a d8 01
+Read array request payload: d9 01
+Built request: 04 1a d9 01
+Read array request payload: da 01
+Built request: 04 1a da 01
+Read array request payload: db 01
+Built request: 04 1a db 01
+Read array request payload: dc 01
+Built request: 04 1a dc 01
+Read array request payload: dd 01
+Built request: 04 1a dd 01
+Read array request payload: de 01
+Built request: 04 1a de 01
+Read array request payload: df 01
+Built request: 04 1a df 01
+Read array request payload: e0 01
+Built request: 04 1a e0 01
+Read array request payload: e1 01
+Built request: 04 1a e1 01
+Read array request payload: e2 01
+Built request: 04 1a e2 01
+Read array request payload: e3 01
+Built request: 04 1a e3 01
+Read array request payload: e4 01
+Built request: 04 1a e4 01
+Read array request payload: e5 01
+Built request: 04 1a e5 01
+Read array request payload: e6 01
+Built request: 04 1a e6 01
+Read array request payload: e7 01
+Built request: 04 1a e7 01
+Read array request payload: e8 01
+Built request: 04 1a e8 01
+Read array request payload: e9 01
+Built request: 04 1a e9 01
+Read array request payload: ea 01
+Built request: 04 1a ea 01
+Read array request payload: eb 01
+Built request: 04 1a eb 01
+Read array request payload: ec 01
+Built request: 04 1a ec 01
+Read array request payload: ed 01
+Built request: 04 1a ed 01
+Read array request payload: ee 01
+Built request: 04 1a ee 01
+Read array request payload: ef 01
+Built request: 04 1a ef 01
+Read array request payload: f0 01
+Built request: 04 1a f0 01
+Read array request payload: f1 01
+Built request: 04 1a f1 01
+Read array request payload: f2 01
+Built request: 04 1a f2 01
+Read array request payload: f3 01
+Built request: 04 1a f3 01
+Read array request payload: f4 01
+Built request: 04 1a f4 01
+Read array request payload: f5 01
+Built request: 04 1a f5 01
+Read array request payload: f6 01
+Built request: 04 1a f6 01
+Read array request payload: f7 01
+Built request: 04 1a f7 01
+Read array request payload: f8 01
+Built request: 04 1a f8 01
+Read array request payload: f9 01
+Built request: 04 1a f9 01
+Read array request payload: fa 01
+Built request: 04 1a fa 01
+Read array request payload: fb 01
+Built request: 04 1a fb 01
+Read array request payload: fc 01
+Built request: 04 1a fc 01
+Read array request payload: fd 01
+Built request: 04 1a fd 01
+Read array request payload: fe 01
+Built request: 04 1a fe 01
+---
+Received previous response, sending next command...
+Raw notify response data: 14 1a 00 3e 00 00 00 08 2d 02 00 00 39 01 08 00 e0 05 0d 00
+SSC Notification: 14 1a 00 3e 00 00 00 08 2d 02 00 00 39 01 08 00 e0 05 0d 00
+Parsed: unknown ssc command: 26
+---
+Received previous response, sending next command...
+Raw notify response data: 0e 1a 85 ae 05 6b c5 ad 05 6b c6 ad 05 6b
+SSC Notification: 0e 1a 85 ae 05 6b c5 ad 05 6b c6 ad 05 6b
+Parsed: unknown ssc command: 26
+---
+Received previous response, sending next command...
+Raw notify response data: 08 1a 03 00 00 01 02 00
+SSC Notification: 08 1a 03 00 00 01 02 00
+Parsed: unknown ssc command: 26
+---
+Received previous response, sending next command...
+Raw notify response data: 0a 1a 00 08 00 0a 00 00 00 32
+SSC Notification: 0a 1a 00 08 00 0a 00 00 00 32
+Parsed: today_stats
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
+---
+Received previous response, sending next command...
