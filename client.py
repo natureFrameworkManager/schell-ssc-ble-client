@@ -5,7 +5,7 @@ import simplepyble
 
 from queue import Queue
 
-SCAN_DURATION = 1
+SCAN_DURATION = 10
 SCAN_DEBUG_SSC = False
 SCAN_SHOW_UNKNOWN = False
 DEBUG_BYTES = True
@@ -266,7 +266,7 @@ def parse_notify_response(characteristic: str, data: bytes):
     if cmd_queries.get(characteristic) is None:
         return None
     original_request = cmd_queries.get(characteristic)[0]
-    cmd_queries.get(characteristic)[0] = b""
+    cmd_queries[characteristic] = (b"", cmd_queries.get(characteristic)[1])
     if characteristic == DEVICE_INFO_CHARACTERISTIC:
         if command == CMD_READ_ARRAY:
             """Request: Payload[0] = Index"""
@@ -532,7 +532,7 @@ def query_device(device: simplepyble.Peripheral):
         device.notify(SERVICE_UUID, SSC_CHARACTERISTIC, lambda data: print(f"SSC Notification: {data.hex(' ')}\nParsed: {parse_notify_response(SSC_CHARACTERISTIC, data)}"))
         print("Notification handler set up")
 
-        cmd_queries[SSC_CHARACTERISTIC][0] = build_read_array_request(0x08, 8)
+        cmd_queries[SSC_CHARACTERISTIC] = (build_read_array_request(0x08, 8), cmd_queries[SSC_CHARACTERISTIC][1])
         device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, cmd_queries[SSC_CHARACTERISTIC][0])
         print("Read request sent")
 
@@ -544,7 +544,7 @@ def query_device(device: simplepyble.Peripheral):
             if cmd_queries[SSC_CHARACTERISTIC][0] == b"":
                 print("Received previous response, sending next command...")
                 cmd = cmd_queries[SSC_CHARACTERISTIC][1].get()
-                cmd_queries[SSC_CHARACTERISTIC][0] = cmd
+                cmd_queries[SSC_CHARACTERISTIC] = (cmd, cmd_queries[SSC_CHARACTERISTIC][1])
                 device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, cmd_queries[SSC_CHARACTERISTIC][0])
             else:
                 print(f"Waiting for previous command to be processed... | {cmd_queries[SSC_CHARACTERISTIC][1].qsize()} Waiting")

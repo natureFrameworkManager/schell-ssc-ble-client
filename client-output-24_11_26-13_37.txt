@@ -1,0 +1,217 @@
+(.venv) caspar@debian:~/Downloads/schell-ssc-ble-client$ python client.py 
+Using adapter: hci0 [C8:94:02:6B:CE:AA]
+Scan for 10 seconds
+Scan started
+Scan stopped
+Found 8 devices, including 1 SSC devices
+Found SSC device: SE2 [08:FD:52:39:36:E2]
+Raw advertisement data: 02 0a 42 61 64 20 31 00 00 00 00 00 00 00 01 02 02 00 35
+{'device_type': 2, 'device_sub_type': 10, 'serial_display_name': b'Bad 1\x00\x00\x00\x00\x00\x00\x00', 'device_sub_sub_type': 2, 'battery_voltage_adv': 53, 'device_type_name': 'Waschtisch', 'device_subtype_name': 'Puris E²', 'device_subsubtype_high_name': '', 'device_subsubtype_low_name': 'HD-M', 'device_name': 'Bad 1', 'battery_voltage': 5.3, 'battery_level': 53}
+Select a SSC device(s) to connect to [split by comma]:
+0: SE2 [08:FD:52:39:36:E2]
+Enter choice: 0
+Connecting to SE2 [08:FD:52:39:36:E2]
+Querying device: SE2 [08:FD:52:39:36:E2]
+    Device is connected
+    Device is now connected
+Notification handler set up
+Read array request payload: 08 08
+Built request: 04 1a 08 08
+Read request sent
+Read request payload: 00 20 10
+Built request: 05 0a 00 20 10
+Read request payload: 00 30 10
+Built request: 05 0a 00 30 10
+Read request payload: 00 40 10
+Built request: 05 0a 00 40 10
+Read request payload: 00 50 10
+Built request: 05 0a 00 50 10
+Read request payload: 00 60 10
+Built request: 05 0a 00 60 10
+Read request payload: 00 70 10
+Built request: 05 0a 00 70 10
+Read request payload: 00 80 10
+Built request: 05 0a 00 80 10
+Read request payload: 00 90 10
+Built request: 05 0a 00 90 10
+Read request payload: 00 a0 10
+Built request: 05 0a 00 a0 10
+Read request payload: 00 b0 10
+Built request: 05 0a 00 b0 10
+Read request payload: 00 c0 10
+Built request: 05 0a 00 c0 10
+Waiting for previous command to be processed... | 11 Waiting
+Raw notify response data: 14 1a 00 4f 00 00 00 e8 40 04 00 00 33 01 00 00 a0 05 0d 00
+SSC Notification: 14 1a 00 4f 00 00 00 e8 40 04 00 00 33 01 00 00 a0 05 0d 00
+Parsed: unknown ssc command
+Raw notify response data: 14 1a 00 dd 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 24 3b
+Info Notification: 14 1a 00 dd 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 24 3b
+Parsed: {'temperature': 20644061, 'battery_voltage_raw': 5864, 'vcc_raw': 28, '3.3v': 5898, 'year': 2026, 'month': 11, 'day': 24, 'hour': 14, 'minute': 36, 'second': 59, 'battery': {'battery_voltage': 586.4, 'battery_level': 100}, 'vcc': 0.028, 'datetime': datetime.datetime(2026, 11, 24, 14, 36, 59)}
+Received previous response, sending next command...
+Raw notify response data: 12 0a 99 06 86 02 00 ff ff 00 00 40 09 00 25 09 17 b3
+Starting extraction at address: 32
+Extracting EEPROM_ArticleNumber at address 32: 99 06 86 02 00
+EEPROM_ArticleNumber
+Segment for EEPROM_CleaningStop_enabled at address 108 exceeds data length
+None
+SSC Notification: 12 0a 99 06 86 02 00 ff ff 00 00 40 09 00 25 09 17 b3
+Parsed: read
+Raw notify response data: 14 1a 00 d5 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 00
+Info Notification: 14 1a 00 d5 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 00
+Parsed: {'temperature': 20644053, 'battery_voltage_raw': 5864, 'vcc_raw': 28, '3.3v': 5898, 'year': 2026, 'month': 11, 'day': 24, 'hour': 14, 'minute': 37, 'second': 0, 'battery': {'battery_voltage': 586.4, 'battery_level': 100}, 'vcc': 0.028, 'datetime': datetime.datetime(2026, 11, 24, 14, 37)}
+Received previous response, sending next command...
+Raw notify response data: 12 0a cc 10 f8 11 04 29 ff ff ff ff ff ff 02 ff ff 0c
+Starting extraction at address: 48
+Segment for EEPROM_CleaningStop_enabled at address 108 exceeds data length
+None
+SSC Notification: 12 0a cc 10 f8 11 04 29 ff ff ff ff ff ff 02 ff ff 0c
+Parsed: read
+Raw notify response data: 14 1a 00 e9 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 01
+Info Notification: 14 1a 00 e9 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 01
+Parsed: {'temperature': 20644073, 'battery_voltage_raw': 5864, 'vcc_raw': 28, '3.3v': 5898, 'year': 2026, 'month': 11, 'day': 24, 'hour': 14, 'minute': 37, 'second': 1, 'battery': {'battery_voltage': 586.4, 'battery_level': 100}, 'vcc': 0.028, 'datetime': datetime.datetime(2026, 11, 24, 14, 37, 1)}
+Received previous response, sending next command...
+Raw notify response data: 12 0a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Starting extraction at address: 64
+Segment for EEPROM_CleaningStop_enabled at address 108 exceeds data length
+None
+SSC Notification: 12 0a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Parsed: read
+Raw notify response data: 14 1a 00 d3 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 02
+Info Notification: 14 1a 00 d3 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 02
+Parsed: {'temperature': 20644051, 'battery_voltage_raw': 5864, 'vcc_raw': 28, '3.3v': 5898, 'year': 2026, 'month': 11, 'day': 24, 'hour': 14, 'minute': 37, 'second': 2, 'battery': {'battery_voltage': 586.4, 'battery_level': 100}, 'vcc': 0.028, 'datetime': datetime.datetime(2026, 11, 24, 14, 37, 2)}
+Received previous response, sending next command...
+Raw notify response data: 12 0a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Starting extraction at address: 80
+Segment for EEPROM_CleaningStop_enabled at address 108 exceeds data length
+None
+SSC Notification: 12 0a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Parsed: read
+Raw notify response data: 14 1a 00 d5 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 03
+Info Notification: 14 1a 00 d5 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 03
+Parsed: {'temperature': 20644053, 'battery_voltage_raw': 5864, 'vcc_raw': 28, '3.3v': 5898, 'year': 2026, 'month': 11, 'day': 24, 'hour': 14, 'minute': 37, 'second': 3, 'battery': {'battery_voltage': 586.4, 'battery_level': 100}, 'vcc': 0.028, 'datetime': datetime.datetime(2026, 11, 24, 14, 37, 3)}
+Received previous response, sending next command...
+Raw notify response data: 12 0a 00 00 ff ff 28 00 28 00 00 7d 10 27 00 3c 00 3e
+Starting extraction at address: 96
+Extracting EEPROM_CleaningStop_enabled at address 108: 00
+EEPROM_CleaningStop_enabled
+Extracting EEPROM_CleaningStop_runtime at address 109: 3c 00
+EEPROM_CleaningStop_runtime
+Segment for EEPROM_StagnationAndFollowUp at address 112 exceeds data length
+None
+SSC Notification: 12 0a 00 00 ff ff 28 00 28 00 00 7d 10 27 00 3c 00 3e
+Parsed: read
+Raw notify response data: 14 1a 00 dd 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 04
+Info Notification: 14 1a 00 dd 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 04
+Parsed: {'temperature': 20644061, 'battery_voltage_raw': 5864, 'vcc_raw': 28, '3.3v': 5898, 'year': 2026, 'month': 11, 'day': 24, 'hour': 14, 'minute': 37, 'second': 4, 'battery': {'battery_voltage': 586.4, 'battery_level': 100}, 'vcc': 0.028, 'datetime': datetime.datetime(2026, 11, 24, 14, 37, 4)}
+Received previous response, sending next command...
+Raw notify response data: 12 0a 3c 00 58 02 ff ff 02 18 00 2c 01 0a 02 58 02 c1
+Starting extraction at address: 112
+Extracting EEPROM_StagnationAndFollowUp at address 112: 3c 00
+EEPROM_StagnationAndFollowUp
+Extracting EEPROM_FollowUpRuntime at address 114: 58 02
+EEPROM_FollowUpRuntime
+Extracting EEPROM_StagnationFlushInterval_mode at address 118: 02
+EEPROM_StagnationFlushInterval_mode
+Extracting EEPROM_StagnationFlushInterval_hours at address 119: 18 00
+EEPROM_StagnationFlushInterval_hours
+Extracting EEPROM_StagnationFlushInterval_runtime at address 121: 2c 01
+EEPROM_StagnationFlushInterval_runtime
+Segment for EEPROM_HybridMode at address 128 exceeds data length
+None
+SSC Notification: 12 0a 3c 00 58 02 ff ff 02 18 00 2c 01 0a 02 58 02 c1
+Parsed: read
+Raw notify response data: 14 1a 00 dd 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 05
+Info Notification: 14 1a 00 dd 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 05
+Parsed: {'temperature': 20644061, 'battery_voltage_raw': 5864, 'vcc_raw': 28, '3.3v': 5898, 'year': 2026, 'month': 11, 'day': 24, 'hour': 14, 'minute': 37, 'second': 5, 'battery': {'battery_voltage': 586.4, 'battery_level': 100}, 'vcc': 0.028, 'datetime': datetime.datetime(2026, 11, 24, 14, 37, 5)}
+Received previous response, sending next command...
+Raw notify response data: 12 0a ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff f1
+Starting extraction at address: 128
+Extracting EEPROM_HybridMode at address 128: ff
+EEPROM_HybridMode
+Extracting EEPROM_HybridInterval at address 129: ff
+EEPROM_HybridInterval
+Extracting EEPROM_HybridRuntime at address 130: ff
+EEPROM_HybridRuntime
+Segment for EEPROM_PreFlushMode at address 146 exceeds data length
+None
+SSC Notification: 12 0a ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff f1
+Parsed: read
+Raw notify response data: 14 1a 00 e2 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 06
+Info Notification: 14 1a 00 e2 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 06
+Parsed: {'temperature': 20644066, 'battery_voltage_raw': 5864, 'vcc_raw': 28, '3.3v': 5898, 'year': 2026, 'month': 11, 'day': 24, 'hour': 14, 'minute': 37, 'second': 6, 'battery': {'battery_voltage': 586.4, 'battery_level': 100}, 'vcc': 0.028, 'datetime': datetime.datetime(2026, 11, 24, 14, 37, 6)}
+Received previous response, sending next command...
+Raw notify response data: 12 0a ff ff ff ff 02 02 6e 00 8c 00 aa 00 1e 0f 00 d1
+Starting extraction at address: 144
+Extracting EEPROM_PreFlushMode at address 146: ff
+EEPROM_PreFlushMode
+Extracting EEPROM_PreFlushStart at address 147: ff
+EEPROM_PreFlushStart
+Extracting EEPROM_SensorRange at address 148: 02
+EEPROM_SensorRange
+Extracting EEPROM_Scenario at address 149: 02
+EEPROM_Scenario
+Extracting EEPROM_PreFlushRuntime at address 158: 00
+EEPROM_PreFlushRuntime
+Unknown segment for EEPROM_ThermalAndContinuous at address 160
+Segment for EEPROM_StadionMode at address 162 exceeds data length
+None
+SSC Notification: 12 0a ff ff ff ff 02 02 6e 00 8c 00 aa 00 1e 0f 00 d1
+Parsed: read
+Raw notify response data: 14 1a 00 e4 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 07
+Info Notification: 14 1a 00 e4 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 07
+Parsed: {'temperature': 20644068, 'battery_voltage_raw': 5864, 'vcc_raw': 28, '3.3v': 5898, 'year': 2026, 'month': 11, 'day': 24, 'hour': 14, 'minute': 37, 'second': 7, 'battery': {'battery_voltage': 586.4, 'battery_level': 100}, 'vcc': 0.028, 'datetime': datetime.datetime(2026, 11, 24, 14, 37, 7)}
+Received previous response, sending next command...
+Raw notify response data: 12 0a ff ff ff ff ff ff ff ff 01 2c 01 00 58 02 ff 9c
+Starting extraction at address: 160
+Unknown segment for EEPROM_ThermalAndContinuous at address 160
+Extracting EEPROM_StadionMode at address 162: ff
+EEPROM_StadionMode
+Extracting EEPROM_OdourStopMode at address 163: ff
+EEPROM_OdourStopMode
+Extracting EEPROM_OdourStopInterval at address 164: ff
+EEPROM_OdourStopInterval
+Extracting EEPROM_StadionRuntime at address 167: ff
+EEPROM_StadionRuntime
+Extracting EEPROM_ContinuousEnabled at address 168: 01
+EEPROM_ContinuousEnabled
+Extracting EEPROM_ContinuousRuntime at address 169: 2c 01
+EEPROM_ContinuousRuntime
+Extracting EEPROM_ThermalEnabled at address 171: 00
+EEPROM_ThermalEnabled
+Extracting EEPROM_ThermalRuntime at address 172: 58 02
+EEPROM_ThermalRuntime
+Extracting EEPROM_OdourStopRuntime at address 174: ff
+EEPROM_OdourStopRuntime
+Segment for EEPROM_Installer at address 176 exceeds data length
+None
+SSC Notification: 12 0a ff ff ff ff ff ff ff ff 01 2c 01 00 58 02 ff 9c
+Parsed: read
+Raw notify response data: 14 1a 00 d3 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 08
+Info Notification: 14 1a 00 d3 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 08
+Parsed: {'temperature': 20644051, 'battery_voltage_raw': 5864, 'vcc_raw': 28, '3.3v': 5898, 'year': 2026, 'month': 11, 'day': 24, 'hour': 14, 'minute': 37, 'second': 8, 'battery': {'battery_voltage': 586.4, 'battery_level': 100}, 'vcc': 0.028, 'datetime': datetime.datetime(2026, 11, 24, 14, 37, 8)}
+Received previous response, sending next command...
+Raw notify response data: 12 0a 46 2e 20 44 69 74 74 62 65 72 6e 65 72 00 00 a7
+Starting extraction at address: 176
+Extracting EEPROM_Installer at address 176: 46 2e 20 44 69 74 74 62 65 72 6e 65 72 00 00
+EEPROM_Installer
+Segment for EEPROM_InstallationDate at address 192 exceeds data length
+None
+SSC Notification: 12 0a 46 2e 20 44 69 74 74 62 65 72 6e 65 72 00 00 a7
+Parsed: read
+Raw notify response data: 14 1a 00 df 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 09
+Info Notification: 14 1a 00 df 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 09
+Parsed: {'temperature': 20644063, 'battery_voltage_raw': 5864, 'vcc_raw': 28, '3.3v': 5898, 'year': 2026, 'month': 11, 'day': 24, 'hour': 14, 'minute': 37, 'second': 9, 'battery': {'battery_voltage': 586.4, 'battery_level': 100}, 'vcc': 0.028, 'datetime': datetime.datetime(2026, 11, 24, 14, 37, 9)}
+Received previous response, sending next command...
+Raw notify response data: 12 0a 26 07 24 00 00 00 00 00 00 00 00 00 00 00 00 51
+Starting extraction at address: 192
+Extracting EEPROM_InstallationDate at address 192: 26 07 24
+EEPROM_InstallationDate
+Extracting EEPROM_WcFlushDuration at address 200: 00
+EEPROM_WcFlushDuration
+Segment for EEPROM_Location at address 208 exceeds data length
+None
+SSC Notification: 12 0a 26 07 24 00 00 00 00 00 00 00 00 00 00 00 00 51
+Parsed: read
+Raw notify response data: 14 1a 00 d8 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 0a
+Info Notification: 14 1a 00 d8 00 3b 01 e8 16 1c 00 0a 17 ea 07 0b 18 0e 25 0a
+Parsed: {'temperature': 20644056, 'battery_voltage_raw': 5864, 'vcc_raw': 28, '3.3v': 5898, 'year': 2026, 'month': 11, 'day': 24, 'hour': 14, 'minute': 37, 'second': 10, 'battery': {'battery_voltage': 586.4, 'battery_level': 100}, 'vcc': 0.028, 'datetime': datetime.datetime(2026, 11, 24, 14, 37, 10)}
