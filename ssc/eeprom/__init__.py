@@ -1,0 +1,1 @@
+"""EEPROM decoding: address regions, field layout, extraction and blocks."""

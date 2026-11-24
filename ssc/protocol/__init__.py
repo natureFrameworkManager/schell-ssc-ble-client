@@ -1,0 +1,1 @@
+"""Request framing for the SSC GATT characteristics."""

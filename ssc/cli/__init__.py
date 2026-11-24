@@ -1,0 +1,1 @@
+"""Command line interface: the only layer that prints or reads stdin."""

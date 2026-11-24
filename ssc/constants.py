@@ -1,0 +1,43 @@
+"""Protocol constants: GATT UUIDs, SSC opcodes, EEPROM sizes and timings."""
+
+from __future__ import annotations
+
+# --- GATT service / characteristic UUIDs -----------------------------------
+SERVICE_UUID = "89ce0100-56b1-40c1-be09-887f3c723d22"
+DEVICE_INFO_CHARACTERISTIC = "89ce0101-56b1-40c1-be09-887f3c723d22"
+DEVICE_CONFIG_CHARACTERISTIC = "89ce0102-56b1-40c1-be09-887f3c723d22"
+SSC_CHARACTERISTIC = "89ce0103-56b1-40c1-be09-887f3c723d22"
+
+OTA_SERVICE_UUID = "1D14D6EE-FD63-4FA1-BFA4-8F47B42119F0"
+OTA_CONTROL_CHARACTERISTIC = "F7BF3564-FB6D-4E53-88A4-5E37E0326063"
+OTA_DATA_CHARACTERISTIC = "984227F3-34FC-4045-A5D0-2C581F81A153"
+
+ALL_CHARACTERISTICS = (
+    DEVICE_INFO_CHARACTERISTIC,
+    DEVICE_CONFIG_CHARACTERISTIC,
+    SSC_CHARACTERISTIC,
+)
+
+# --- SSC opcodes -----------------------------------------------------------
+CMD_READ_MODULE_INFO = 0x01
+CMD_DIG_WRITE_BIT = 0x02
+CMD_DIG_READ_BYTE = 0x05
+CMD_READ_EE_BY_ADDR = 0x0A
+CMD_WRITE_EE_BY_ADDR = 0x0B
+CMD_READ_ARRAY = 0x1A
+
+# --- Device identification -------------------------------------------------
+SSC_IDENTIFIER_PREFIX = "SE2"
+TEST_ADAPTER_IDENTIFIER = "test"
+
+# --- EEPROM -----------------------------------------------------------------
+EEPROM_SIZE = 0x10000
+EEPROM_ADDRESS_SPACE_END = 0x4000
+EEPROM_DUMP_START = 0x0000
+EEPROM_DUMP_END = 0x3FFF
+EEPROM_CHUNK_SIZE = 16
+ARRAY_CHUNK_SIZE = 1
+
+# --- Timing -----------------------------------------------------------------
+NOTIFICATION_SETTLE_S = 1.0
+COMMAND_POLL_INTERVAL_S = 0.05

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract the full EEPROM content from the client.py dump logs.
+"""Extract the full EEPROM content from the client dump logs.
 
 The dump logs (dump/client-dump1.txt, dump/client-dump2.txt) contain pairs of
 lines like:
@@ -7,7 +7,8 @@ lines like:
     Raw notify response data: 12 0a 99 06 86 02 00 ff ff 00 00 40 09 00 25 09 17 b3
     Starting extraction at address: 32
 
-The raw response packet layout is (see parse_notify_response() in client.py):
+The raw response packet layout is (see parse_response() in
+``ssc/notifications.py``):
 
     byte 0    : packet length (total number of bytes in the packet)
     byte 1    : opcode (0x0A == CMD_READ_EE_BY_ADDR)
@@ -26,21 +27,25 @@ import argparse
 import sys
 from pathlib import Path
 
-EEPROM_SIZE = 0x10000
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
-CMD_READ_EE_BY_ADDR = 0x0A
+from ssc.constants import CMD_READ_EE_BY_ADDR, EEPROM_SIZE  # noqa: E402
 
 RAW_PREFIX = "Raw notify response data:"
 ADDRESS_PREFIX = "Starting extraction at address:"
 
-DEFAULT_DUMP_DIR = Path(__file__).resolve().parent / "dump"
-DEFAULT_OUTPUT = Path(__file__).resolve().parent / "eeprom.bin"
+DEFAULT_DUMP_DIR = REPO_ROOT / "dump"
+DEFAULT_OUTPUT = REPO_ROOT / "dump" / "eeprom.bin"
 
 
-def parse_dump(path: Path):
+def parse_dump(path: Path, require_chunks: bool = True):
     """Parse one dump log and return its (address, payload) chunks.
 
-    The addresses are checked to be strictly increasing.
+    The addresses are checked to be strictly increasing.  With
+    *require_chunks* disabled an empty chunk list is returned instead of an
+    error (used when auto-discovering the default dump files).
     """
     try:
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
@@ -108,7 +113,7 @@ def parse_dump(path: Path):
 
         chunks.append((address, packet[2:]))
 
-    if not chunks:
+    if not chunks and require_chunks:
         raise ValueError(f"{path}: no EEPROM read responses found")
 
     return chunks
@@ -175,7 +180,7 @@ def format_hexdump(data: bytes):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        description="Extract the full EEPROM content from client.py dump logs."
+        description="Extract the full EEPROM content from the client dump logs."
     )
     parser.add_argument(
         "dumps",
@@ -198,7 +203,8 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     dump_paths = args.dumps
-    if not dump_paths:
+    using_defaults = not dump_paths
+    if using_defaults:
         dump_paths = sorted(DEFAULT_DUMP_DIR.glob("client-dump*.txt"))
         if not dump_paths:
             parser.error(f"no dump files found in {DEFAULT_DUMP_DIR}")
@@ -206,7 +212,10 @@ def main(argv=None):
     all_chunks = []
     try:
         for path in dump_paths:
-            chunks = parse_dump(path)
+            chunks = parse_dump(path, require_chunks=not using_defaults)
+            if not chunks:
+                print(f"skip: {path}: no EEPROM read responses found", file=sys.stderr)
+                continue
             first_address = chunks[0][0]
             last_address, last_payload = chunks[-1]
             last_byte = last_address + len(last_payload) - 1
