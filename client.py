@@ -9,6 +9,7 @@ SCAN_DURATION = 10
 SCAN_DEBUG_SSC = False
 SCAN_SHOW_UNKNOWN = False
 DEBUG_BYTES = True
+SHOW_TELEMETRY = False
 
 SERVICE_UUID                    = "89ce0100-56b1-40c1-be09-887f3c723d22"
 DEVICE_INFO_CHARACTERISTIC      = "89ce0101-56b1-40c1-be09-887f3c723d22"
@@ -104,10 +105,10 @@ def extract_eeprom(data: bytes, starting_address: int = 108):
             # Here you would add the actual extraction logic based on the parser and data
             print(parser(segment_data))
 
-def generate_cmds_for_eeprom_dump(start: int = 0x0000, end: int = 0xFFFF) -> list[bytes]:
+def generate_cmds_for_eeprom_dump(start: int = 0x0000, end: int = 0xFFFF, overlap: int = 0) -> list[bytes]:
     CHUNK_SIZE = 16
     cmds = []
-    for address in range(start, end, CHUNK_SIZE):  # Assuming 16-byte chunks
+    for address in range(start, end, CHUNK_SIZE - overlap):  # Assuming 16-byte chunks
         cmd = build_read_request(address, CHUNK_SIZE)
         cmds.append(cmd)
     return cmds
@@ -311,7 +312,7 @@ def parse_notify_response(characteristic: str, data: bytes):
                 return get_lifetime_stats(payload[1:])
             if original_request[2] == 0x0B:
                 return "today_stats"
-        return "unknown ssc command"
+        return "unknown ssc command: " + str(command)
     print("Unknown command:", command, "payload:", payload.hex(' '))
     return None
 
@@ -517,6 +518,13 @@ def get_device_services(device: simplepyble.Peripheral):
     service_uuid, characteristic_uuid = service_characteristic_pair[choice]
     return service_uuid, characteristic_uuid
 
+def output_info_notification(data: bytes):
+    if (data[2] == 0x00 and not SHOW_TELEMETRY):
+        return
+    print(f"Info Notification: {data.hex(' ')}")
+    parsed = parse_notify_response(DEVICE_INFO_CHARACTERISTIC, data)
+    print(f"Parsed: {parsed}")
+
 def query_device(device: simplepyble.Peripheral):
     print(f"Querying device: {device.identifier()} [{device.address()}]")
     if device.is_connected():
@@ -528,7 +536,7 @@ def query_device(device: simplepyble.Peripheral):
 
         print("    Device is now connected")
 
-        device.notify(SERVICE_UUID, DEVICE_INFO_CHARACTERISTIC, lambda data: print(f"Info Notification: {data.hex(' ')}\nParsed: {parse_notify_response(DEVICE_INFO_CHARACTERISTIC, data)}"))
+        device.notify(SERVICE_UUID, DEVICE_INFO_CHARACTERISTIC, output_info_notification)
         device.notify(SERVICE_UUID, SSC_CHARACTERISTIC, lambda data: print(f"SSC Notification: {data.hex(' ')}\nParsed: {parse_notify_response(SSC_CHARACTERISTIC, data)}"))
         print("Notification handler set up")
 
@@ -536,13 +544,13 @@ def query_device(device: simplepyble.Peripheral):
         device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, cmd_queries[SSC_CHARACTERISTIC][0])
         print("Read request sent")
 
-        eeprom_cmds = generate_cmds_for_eeprom_dump(32, 200)
+        eeprom_cmds = generate_cmds_for_eeprom_dump(0, 0xFFFF)
         for cmd in eeprom_cmds:
             cmd_queries[SSC_CHARACTERISTIC][1].put(cmd)
 
         while not cmd_queries[SSC_CHARACTERISTIC][1].empty():
             if cmd_queries[SSC_CHARACTERISTIC][0] == b"":
-                print("Received previous response, sending next command...")
+                print("---\nReceived previous response, sending next command...")
                 cmd = cmd_queries[SSC_CHARACTERISTIC][1].get()
                 cmd_queries[SSC_CHARACTERISTIC] = (cmd, cmd_queries[SSC_CHARACTERISTIC][1])
                 device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, cmd_queries[SSC_CHARACTERISTIC][0])
