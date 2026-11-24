@@ -5,7 +5,7 @@ import simplepyble
 
 from queue import Queue
 
-SCAN_DURATION = 10
+SCAN_DURATION = 2
 SCAN_DEBUG_SSC = False
 SCAN_SHOW_UNKNOWN = False
 DEBUG_BYTES = True
@@ -26,58 +26,112 @@ CMD_READ_EE_BY_ADDR     = 0x0A
 CMD_WRITE_EE_BY_ADDR    = 0x0B
 CMD_READ_ARRAY          = 0x1A
 
+def bcd_to_int(value: int) -> int:
+    """Convert one packed BCD byte (e.g. 0x24) into its decimal value (24)."""
+    return ((value >> 4) & 0x0F) * 10 + (value & 0x0F)
+
 # EEPROM regions [addr, len]
 EEPROM_MAP = [
-    [[32, 5], "EEPROM_ArticleNumber", lambda data: "EEPROM_ArticleNumber"],
-    [[108, 1], "EEPROM_CleaningStop_enabled", lambda data: "EEPROM_CleaningStop_enabled"],
-    [[109, 2], "EEPROM_CleaningStop_runtime", lambda data: "EEPROM_CleaningStop_runtime"],
-    [[112, 2], "EEPROM_StagnationAndFollowUp", lambda data: "EEPROM_StagnationAndFollowUp"],
-    [[114, 2], "EEPROM_FollowUpRuntime", lambda data: "EEPROM_FollowUpRuntime"],
-    [[118, 1], "EEPROM_StagnationFlushInterval_mode", lambda data: "EEPROM_StagnationFlushInterval_mode"],
-    [[119, 2], "EEPROM_StagnationFlushInterval_hours", lambda data: "EEPROM_StagnationFlushInterval_hours"],
-    [[121, 2], "EEPROM_StagnationFlushInterval_runtime", lambda data: "EEPROM_StagnationFlushInterval_runtime"],
-    [[128, 1], "EEPROM_HybridMode", lambda data: "EEPROM_HybridMode"],
-    [[129, 1], "EEPROM_HybridInterval", lambda data: "EEPROM_HybridInterval"],
-    [[130, 1], "EEPROM_HybridRuntime", lambda data: "EEPROM_HybridRuntime"],
-    [[146, 1], "EEPROM_PreFlushMode", lambda data: "EEPROM_PreFlushMode"],
-    [[147, 1], "EEPROM_PreFlushStart", lambda data: "EEPROM_PreFlushStart"],
-    [[148, 1], "EEPROM_SensorRange", lambda data: "EEPROM_SensorRange"],
-    [[149, 1], "EEPROM_Scenario", lambda data: "EEPROM_Scenario"],
-    [[158, 1], "EEPROM_PreFlushRuntime", lambda data: "EEPROM_PreFlushRuntime"],
-    [[160, None], "EEPROM_ThermalAndContinuous", lambda data: "EEPROM_ThermalAndContinuous"],
-    [[162, 1], "EEPROM_StadionMode", lambda data: "EEPROM_StadionMode"],
-    [[163, 1], "EEPROM_OdourStopMode", lambda data: "EEPROM_OdourStopMode"],
-    [[164, 1], "EEPROM_OdourStopInterval", lambda data: "EEPROM_OdourStopInterval"],
-    [[167, 1], "EEPROM_StadionRuntime", lambda data: "EEPROM_StadionRuntime"],
-    [[168, 1], "EEPROM_ContinuousEnabled", lambda data: "EEPROM_ContinuousEnabled"],
-    [[169, 2], "EEPROM_ContinuousRuntime", lambda data: "EEPROM_ContinuousRuntime"],
-    [[171, 1], "EEPROM_ThermalEnabled", lambda data: "EEPROM_ThermalEnabled"],
-    [[172, 2], "EEPROM_ThermalRuntime", lambda data: "EEPROM_ThermalRuntime"],
-    [[174, 1], "EEPROM_OdourStopRuntime", lambda data: "EEPROM_OdourStopRuntime"],
-    [[176, 15], "EEPROM_Installer", lambda data: "EEPROM_Installer"],
-    [[192, 3], "EEPROM_InstallationDate", lambda data: "EEPROM_InstallationDate"],
-    [[200, 1], "EEPROM_WcFlushDuration", lambda data: "EEPROM_WcFlushDuration"],
-    [[208, 15], "EEPROM_Location", lambda data: "EEPROM_Location"],
-    [[256, None], "EEPROM_ConfigStart", lambda data: "EEPROM_ConfigStart"],
-    [[276, 1], "EEPROM_AmbiantSensorEnabled", lambda data: "EEPROM_AmbiantSensorEnabled"],
-    [[284, 2], "EEPROM_LongRangeMode", lambda data: "EEPROM_LongRangeMode"],
-    [[288, 10], "EEPROM_RaweId", lambda data: "EEPROM_RaweId"],
-    [[336, None], "EEPROM_RangeMode", lambda data: "EEPROM_RangeMode"],
-    [[347, 2], "EEPROM_LongRangeModeInterval", lambda data: "EEPROM_LongRangeModeInterval"],
-    [[349, 2], "EEPROM_UserDetectionModeInterval", lambda data: "EEPROM_UserDetectionModeInterval"],
-    [[362, 2], "EEPROM_HandDetectTime", lambda data: "EEPROM_HandDetectTime"],
-    [[370, 2], "EEPROM_SwitchOffInterval", lambda data: "EEPROM_SwitchOffInterval"],
-    [[383, None], "EEPROM_ConfigEnd", lambda data: "EEPROM_ConfigEnd"],
-    [[512, 12], "EEPROM_DeviceName", lambda data: "EEPROM_DeviceName"],
-    [[528, 7], "EEPROM_DevicePassword", lambda data: "EEPROM_DevicePassword"],
-    [[535, 7], "EEPROM_Password", lambda data: "EEPROM_Password"],
-    [[594, 1], "EEPROM_FlowRate", lambda data: "EEPROM_FlowRate"],
-    [[606, 1], "EEPROM_SensorExpertMode", lambda data: "EEPROM_SensorExpertMode"],
-    [[768, 112], "EEPROM_CalendarStart", lambda data: "EEPROM_CalendarStart"],
-    [[880, None], "EEPROM_CalendarEnd", lambda data: "EEPROM_CalendarEnd"],
-    [[896, 8], "EEPROM_NeedBased", lambda data: "EEPROM_NeedBased"],
+    [[32, 5], "EEPROM_ArticleNumber", lambda data: ("{0:X}-{1:X}-{2:X}-{3:X}-{4:X}".format(data[4], data[3], data[2], data[1], data[0]))],
+    [[108, 1], "EEPROM_CleaningStop_enabled", lambda data: bool(data[0])],
+    [[109, 2], "EEPROM_CleaningStop_runtime", lambda data: int.from_bytes(data, "little")],
+    [[112, 2], "EEPROM_StagnationAndFollowUp", lambda data: int.from_bytes(data, "little")],
+    [[114, 2], "EEPROM_FollowUpRuntime", lambda data: int.from_bytes(data, "little")],
+    [[118, 1], "EEPROM_StagnationFlushInterval_mode", lambda data: bool(data[0] == 2)],
+    [[119, 2], "EEPROM_StagnationFlushInterval_hours", lambda data: int.from_bytes(data, "little")],
+    [[121, 2], "EEPROM_StagnationFlushInterval_runtime", lambda data: int.from_bytes(data, "little")],
+    [[128, 1], "EEPROM_HybridMode", lambda data: bool(data[0])],
+    [[129, 1], "EEPROM_HybridInterval", lambda data: int.from_bytes(data)],
+    [[130, 1], "EEPROM_HybridRuntime", lambda data: int.from_bytes(data)],
+    [[146, 1], "EEPROM_PreFlushMode", lambda data: bool(data[0])],
+    [[147, 1], "EEPROM_PreFlushStart", lambda data: int.from_bytes(data)],
+    [[148, 1], "EEPROM_SensorRange", lambda data: ["short", "mid", "long"][data[0]]],
+    [[149, 1], "EEPROM_Scenario", lambda data: int.from_bytes(data)],
+    [[158, 1], "EEPROM_PreFlushRuntime", lambda data: int.from_bytes(data)],
+    [[160, None], "EEPROM_ThermalAndContinuous", lambda data: data],
+    [[162, 1], "EEPROM_StadionMode", lambda data: bool(data[0])],
+    [[163, 1], "EEPROM_OdourStopMode", lambda data: bool(data[0])],
+    [[164, 1], "EEPROM_OdourStopInterval", lambda data: int.from_bytes(data)],
+    [[167, 1], "EEPROM_StadionRuntime", lambda data: int.from_bytes(data)],
+    [[168, 1], "EEPROM_ContinuousEnabled", lambda data: bool(data[0])],
+    [[169, 2], "EEPROM_ContinuousRuntime", lambda data: int.from_bytes(data, "little")],
+    [[171, 1], "EEPROM_ThermalEnabled", lambda data: bool(data[0])],
+    [[172, 2], "EEPROM_ThermalRuntime", lambda data: int.from_bytes(data, "little")],
+    [[174, 1], "EEPROM_OdourStopRuntime", lambda data: int.from_bytes(data)],
+    [[176, 15], "EEPROM_Installer", lambda data: data.decode("cp1250").rstrip("\x00")], #CP1250 text, bytes outside 0x20–0x7A zeroed
+    [[192, 3], "EEPROM_InstallationDate", lambda data: datetime.date(2000 + bcd_to_int(data[0]), bcd_to_int(data[1]), bcd_to_int(data[2]))], # BCD year/month/day, e.g. 26 07 24 -> 2026-07-24
+    [[200, 1], "EEPROM_WcFlushDuration", lambda data: int.from_bytes(data)], # TODO: Lookup via WCTable
+    [[208, 15], "EEPROM_Location", lambda data: data.decode("cp1250").rstrip("\x00")], #CP1250 text, bytes outside 0x20–0x7A zeroed
+    [[256, None], "EEPROM_ConfigStart", lambda data: data],
+    [[276, 1], "EEPROM_AmbiantSensorEnabled", lambda data: bool(data[0] != 0)],
+    [[284, 2], "EEPROM_LongRangeMode", lambda data: int.from_bytes(data, "little")],
+    [[288, 10], "EEPROM_RaweId", lambda data: data.decode("ascii").rstrip("\x00")], # ASCII
+    [[336, None], "EEPROM_RangeMode", lambda data: data],
+    [[347, 2], "EEPROM_LongRangeModeInterval", lambda data: int.from_bytes(data, "little")],
+    [[349, 2], "EEPROM_UserDetectionModeInterval", lambda data: int.from_bytes(data, "little")],
+    [[362, 2], "EEPROM_HandDetectTime", lambda data: int.from_bytes(data, "little")],
+    [[370, 2], "EEPROM_SwitchOffInterval", lambda data: int.from_bytes(data, "little")],
+    [[383, None], "EEPROM_ConfigEnd", lambda data: data],
+    [[512, 12], "EEPROM_DeviceName", lambda data: data.decode("cp1250").rstrip("\x00")],
+    [[528, 7], "EEPROM_DevicePassword", lambda data: data.decode("cp1250").rstrip("\x00")],
+    [[535, 7], "EEPROM_Password", lambda data: data.decode("cp1250").rstrip("\x00")],
+    [[589, 1], "EEPROM_StagnationFlushLog_nextIndex", lambda data: int.from_bytes(data) * 8 + 1024],
+    [[590, 1], "EEPROM_ThermalDesinfectionLog_nextIndex", lambda data: int.from_bytes(data) * 8 + 2048],
+    [[592, 1], "EEPROM_DauerlaufLog_nextIndex", lambda data: int.from_bytes(data) * 8 + 2176],
+    [[593, 1], "EEPROM_CleaningStopLog_nextIndex", lambda data: int.from_bytes(data) * 8 + 2304],
+    [[594, 1], "EEPROM_FlowRate", lambda data: int.from_bytes(data)],
+    [[606, 1], "EEPROM_SensorExpertMode", lambda data: bool(data)],
+    [[768, 112], "EEPROM_CalendarStart", lambda data: get_eeprom_calendar(data)],
+    [[880, None], "EEPROM_CalendarEnd", lambda data: data],
+    [[896, 8], "EEPROM_NeedBased", lambda data: bool(data[0] == 0x7F)], # same 8-byte layout, 0x7F sentinel in byte 0 marks need-based mode
 ]
 
+def split_eeprom_calendar(data: bytes):
+    """Split into 8 byte chunks"""
+    """
+    [0] bitmask: bit0=Mon .. bit6=Sun (scheduled mode); 0x7F = "need-based" sentinel; 0xFF = empty/disabled slot
+    [1] hour       (0-23)
+    [2] minute
+    [3] second
+    [4..5] runtime, seconds (uint16 LE)
+    [6..7] reserved (0xFF 0xFF)
+    """
+    chunks = [data[i:i+8] for i in range(0, len(data), 8)]
+    return chunks
+
+def extract_eeprom_calendar_chunk(data: bytes):
+    """Parse a single 8-byte calendar chunk"""
+    if len(data) != 8:
+        raise ValueError("Calendar chunk must be 8 bytes")
+    bitmask = data[0]
+    hour = data[1]
+    minute = data[2]
+    second = data[3]
+    runtime = int.from_bytes(data[4:6], "little")
+    reserved = data[6:8]
+    return {
+        "bitmask": bitmask,
+        "hour": hour,
+        "minute": minute,
+        "second": second,
+        "runtime": runtime,
+        "reserved": reserved
+    }
+
+def map_eeprom_calendar_bitmask(bitmask_raw: int) -> tuple[str, str|None]:
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    if bitmask_raw == 0x7F:
+        return ("Need-based", None)
+    if bitmask_raw == 0xFF:
+        return ("Empty", None)
+    active_days = [day for i, day in enumerate(days) if bitmask_raw & (1 << i)]
+    return ("Scheduled", ", ".join(active_days) if active_days else None)
+
+def get_eeprom_calendar(data: bytes):
+    chunks = split_eeprom_calendar(data)
+    parsed_chunks = [extract_eeprom_calendar_chunk(chunk) for chunk in chunks]
+    parsed_chunks = [dict(chunk, bitmask_mapped=map_eeprom_calendar_bitmask(chunk["bitmask"])) for chunk in parsed_chunks]
+    return parsed_chunks
 
 cmd_queries: dict[str, tuple[bytes, Queue[bytes]]] = {
     DEVICE_INFO_CHARACTERISTIC: (b"", Queue()),
@@ -103,7 +157,10 @@ def extract_eeprom(data: bytes, starting_address: int = 108):
             segment_data = data[segment_begin:segment_end]
             print(f"Extracting {name} at address {address}: {segment_data.hex(" ")}")
             # Here you would add the actual extraction logic based on the parser and data
-            print(parser(segment_data))
+            try:
+                print(f"{name} Parsed: {parser(segment_data)}")
+            except Exception as e:
+                print(f"Error parsing {name} at address {address}: {e}")
 
 def generate_cmds_for_eeprom_dump(start: int = 0x0000, end: int = 0xFFFF, overlap: int = 0) -> list[bytes]:
     CHUNK_SIZE = 16
@@ -303,11 +360,25 @@ def parse_notify_response(characteristic: str, data: bytes):
         if original_request is None:
             print("Original request is None for SSC")
             return None
+        if command == CMD_READ_MODULE_INFO:
+            """Request: Request[8..9] = App Version, Request[10..15] = serial"""
+            return {
+                "app_version": parse_version(original_request[8:10]),
+                "serial": original_request[10:16]
+            }
         if command == CMD_READ_EE_BY_ADDR:
             """Request: Request[2] = Address HI, Request[3] = Address LO, Request[4] = Length of the data to read"""
             original_address = (original_request[2] << 8) | original_request[3]
-            print(f"{extract_eeprom(payload, original_address)}")
+            if original_address <= 0x03FF:
+                return extract_eeprom(payload, original_address)
+            elif 0x0A00 <= original_address <= 0x1569:
+                return get_eeprom_stats(payload, original_address)
+            elif 0x0400 <= original_address <= 0x09FF:
+                return get_eeprom_event_history(payload, original_address)
             return "read"
+        if command == CMD_DIG_READ_BYTE:
+            """Request: Request[2] = Address, Request[3] = Value"""
+            return parse_bit_read(payload[0], payload[1])
         if command == CMD_WRITE_EE_BY_ADDR:
             """Request: Request[2] = Address HI, Request[3] = Address LO, Request[4] = Length of the data to write, Request[5..N] = Data to write"""
             return "write"
@@ -319,10 +390,88 @@ def parse_notify_response(characteristic: str, data: bytes):
             if original_request[2] == 0x06:
                 return get_lifetime_stats(payload[1:])
             if original_request[2] == 0x0B:
-                return "today_stats"
+                return get_eeprom_today_stats(payload[1:])
         return "unknown ssc command: " + str(command)
     print("Unknown command:", command, "payload:", payload.hex(' '))
     return None
+
+def parse_bit_read(address_bit: int, value: int) -> tuple[str, str, bool]:
+    if address_bit == 0x01:
+        return ("Value", "open" if bool(value) else "closed", bool(value))
+    if address_bit == 0x02:
+        return ("ThermalDesinfectionCycle", "active" if bool(value) else "inactive", bool(value))
+    if address_bit == 0x04:
+        return ("StagnationFlush", "active" if bool(value) else "inactive", bool(value))
+    if address_bit == 0x08:
+        return ("Dauerlauf", "active" if bool(value) else "inactive", bool(value))
+    if address_bit == 0x10:
+        return ("CleaningStop", "active" if bool(value) else "inactive", bool(value))
+    if address_bit == 0x20:
+        return ("Error", "present" if bool(value) else "absent", bool(value))
+    if address_bit == 0x40:
+        return ("ErrorBattery", "low" if bool(value) else "ok", bool(value))
+    if address_bit == 0x80:
+        return ("ThermalDesinfectionSpecial", "active" if bool(value) else "inactive", bool(value))
+    return ("Unknown", "active" if bool(value) else "inactive", bool(value))
+
+def get_date_from_address(address: int) -> datetime.datetime:
+    day_of_year_0_based = (address - 2560) // 8
+    current_year = datetime.datetime.now().year
+    return datetime.datetime(current_year, 1, 1) + datetime.timedelta(days=day_of_year_0_based)
+
+def get_eeprom_today_stats(data):
+    if len(data) > 8:
+        print("Warning: data length for today's stats is greater than 8 bytes")
+    return get_normalized_and_calculated_stats_chunk(data, True)
+
+def get_eeprom_stats(data: bytes, address: int):
+    #split data into 8-byte chunks
+    chunks = [data[i:i+8] for i in range(0, len(data), 8)]
+    return [(get_date_from_address(address + i * 8), get_normalized_and_calculated_stats_chunk(chunk)) for i, chunk in enumerate(chunks)]
+
+def get_eeprom_event_history(data: bytes, address: int):
+    if 1024 <= address <= 2047:
+        logtype = "stagnation flush"
+    elif 2048 <= address <= 2175:
+        logtype = "thermal desinfection"
+    elif 2176 <= address <= 2303:
+        logtype = "dauerlauf"
+    elif 2304 <= address <= 2431:
+        logtype = "cleaning stop"
+    else:
+        logtype = "unknown"
+    #split data into 8-byte chunks
+    chunks = [data[i:i+8] for i in range(0, len(data), 8)]
+    return {
+        "logtype": logtype,
+        "entries": [get_normalized_and_calculated_event_history_chunk(chunk) for i, chunk in enumerate(chunks)]
+    }
+
+def extract_event_history_chunk(chunk: bytes):
+    log_entry = {}
+    log_entry["year_raw"] = chunk[0]
+    log_entry["mode_raw"] = (chunk[1] & 0b11110000) >> 4
+    log_entry["month"] = (chunk[1] & 0b00001111)
+    log_entry["status_raw"] = (chunk[2] & 0b11110000) >> 4
+    log_entry["day"] = (chunk[2] & 0b00001111)
+    log_entry["hour"] = chunk[3]
+    log_entry["minute"] = chunk[4]
+    log_entry["second"] = chunk[5]
+    log_entry["duration"] = int.from_bytes(chunk[6:8], byteorder='little') # seconds
+    return log_entry
+
+def map_log_entry_stats(status_raw: int) -> str:
+    return "success" if status_raw == 0 else "error/interrupted"
+
+def calculate_log_entry_year(year_raw: int) -> int:
+    return 2000 + year_raw
+
+def get_normalized_and_calculated_event_history_chunk(chunk: bytes):
+    log_entry = extract_event_history_chunk(chunk)
+    log_entry["year"] = calculate_log_entry_year(log_entry["year_raw"])
+    log_entry["status"] = map_log_entry_stats(log_entry["status_raw"])
+    return log_entry
+    
 
 def extract_telemetry(data: bytes):
     telemetry = {}
@@ -376,7 +525,7 @@ def parse_version(data: bytes):
     else:
         return f"V{data[0]:D2}.{data[1]:D2}"
 
-def parse_stats(data: bytes):
+def extract_stats(data: bytes):
     stats = {}
     stats["count-normal"] = int.from_bytes(data[0:2], byteorder='little')
     stats["runtime-normal"] = int.from_bytes(data[2:4], byteorder='little')
@@ -410,12 +559,12 @@ def handle_today_variant(data: bytes):
     result[2], result[3] = data[3], data[2]
     return bytes(result)
 
-def get_normalized_and_calculated_stats(data: bytes, today_variant: bool = False):
+def get_normalized_and_calculated_stats_chunk(data: bytes, today_variant: bool = False):
     if DEBUG_BYTES:
         print(f"Original stats data: {data.hex(' ')}")
     if today_variant:
         data = handle_today_variant(data)
-    stats = parse_stats(data)
+    stats = extract_stats(data)
     stats = normalize_stats(stats)
     stats = calculate_stats(stats)
     return stats
@@ -438,6 +587,8 @@ def build_request(command: int, payload: bytes):
     return bytes(request)
 
 def build_read_request(address: int, length: int):
+    if address >= 0x4000:
+        print("Warning: Actual address space only goes up to 0x4000. Afterwards it is wrapped around")
     if address < 0 or address > 0xFFFF:
         raise ValueError("Address must be between 0 and 65535")
     if length == 0:
@@ -552,22 +703,22 @@ def query_device(device: simplepyble.Peripheral):
         # device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, cmd_queries[SSC_CHARACTERISTIC][0])
         # print("Read request sent")
 
-        eeprom_cmds = generate_cmds_for_eeprom_dump(0x0000, 0xFFFF)
+        eeprom_cmds = generate_cmds_for_eeprom_dump(0x0000, 0x3FFF)
         for cmd in eeprom_cmds:
-            cmd_queries[DEVICE_CONFIG_CHARACTERISTIC][1].put(cmd)
+            cmd_queries[SSC_CHARACTERISTIC][1].put(cmd)
         
         # array_cmds = generate_cmds_for_array_dimp(0x08, 0xff)
         # for cmd in array_cmds:
         #     cmd_queries[SSC_CHARACTERISTIC][1].put(cmd)
 
-        while not cmd_queries[DEVICE_CONFIG_CHARACTERISTIC][1].empty():
-            if cmd_queries[DEVICE_CONFIG_CHARACTERISTIC][0] == b"" or True:
+        while not cmd_queries[SSC_CHARACTERISTIC][1].empty():
+            if cmd_queries[SSC_CHARACTERISTIC][0] == b"":
                 print("---\nReceived previous response, sending next command...")
-                cmd = cmd_queries[DEVICE_CONFIG_CHARACTERISTIC][1].get()
-                cmd_queries[DEVICE_CONFIG_CHARACTERISTIC] = (cmd, cmd_queries[DEVICE_CONFIG_CHARACTERISTIC][1])
-                device.write_command(SERVICE_UUID, DEVICE_CONFIG_CHARACTERISTIC, cmd_queries[DEVICE_CONFIG_CHARACTERISTIC][0])
+                cmd = cmd_queries[SSC_CHARACTERISTIC][1].get()
+                cmd_queries[SSC_CHARACTERISTIC] = (cmd, cmd_queries[SSC_CHARACTERISTIC][1])
+                device.write_command(SERVICE_UUID, SSC_CHARACTERISTIC, cmd_queries[SSC_CHARACTERISTIC][0])
             else:
-                print(f"Waiting for previous command to be processed... | {cmd_queries[DEVICE_CONFIG_CHARACTERISTIC][1].qsize()} Waiting")
+                print(f"Waiting for previous command to be processed... | {cmd_queries[SSC_CHARACTERISTIC][1].qsize()} Waiting")
             time.sleep(0.1)
         time.sleep(1)
 
