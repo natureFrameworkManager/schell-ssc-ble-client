@@ -30,6 +30,10 @@ def date_from_address(
 
 def parse_today_stats(data: bytes) -> ConsumptionStats:
     """Decode today's counters (array index 0x0B)."""
+    if len(data) < STAT_CHUNK_SIZE:
+        raise ValueError(
+            f"Today stats must be at least {STAT_CHUNK_SIZE} bytes, got {len(data)}"
+        )
     if len(data) > STAT_CHUNK_SIZE:
         logger.warning("Warning: data length for today's stats is greater than 8 bytes")
     return parse_stats_chunk(data, today_variant=True)

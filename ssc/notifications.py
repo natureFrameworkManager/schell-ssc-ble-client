@@ -72,7 +72,15 @@ def _parse_device_info(
     if command == CMD_READ_ARRAY and payload:
         parser = DEVICE_INFO_RESPONSES.get(payload[0])
         if parser is not None:
-            return parser(payload[1:])
+            try:
+                return parser(payload[1:])
+            except (IndexError, ValueError) as exc:
+                logger.debug(
+                    "Ignoring malformed device-info response: %s (%s)",
+                    payload.hex(" "),
+                    exc,
+                )
+                return None
     _log_unknown_command(command, payload)
     return None
 
@@ -92,8 +100,17 @@ def _parse_device_config(
     return response
 
 
-def _ssc_read_module_info(payload: bytes, request: bytes, options: Options) -> dict[str, object]:
+def _ssc_read_module_info(
+    payload: bytes, request: bytes | None, options: Options
+) -> dict[str, object] | None:
     """Request: ``[8..9]`` app version, ``[10..15]`` serial."""
+    if request is None or len(request) < 16:
+        logger.debug(
+            "Ignoring short module-info response: request=%s payload=%s",
+            request.hex(" ") if request else None,
+            payload.hex(" "),
+        )
+        return None
     return {
         "app_version": parse_version(request[8:10]),
         "serial": request[10:16],
@@ -113,8 +130,13 @@ def _ssc_read_eeprom(payload: bytes, request: bytes, options: Options) -> object
     return "unknown eeprom address: " + hex(address)
 
 
-def _ssc_dig_read_byte(payload: bytes, request: bytes, options: Options) -> object:
+def _ssc_dig_read_byte(
+    payload: bytes, request: bytes | None, options: Options
+) -> object | None:
     """Request: ``[2]`` address bit."""
+    if len(payload) < 2:
+        logger.debug("Ignoring short digital-read response: %s", payload.hex(" "))
+        return None
     return parse_bit_read(payload[0], payload[1])
 
 
@@ -128,18 +150,42 @@ def _ssc_write_bit(payload: bytes, request: bytes, options: Options) -> object:
     return "bit_write"
 
 
-def _ssc_read_array(payload: bytes, request: bytes, options: Options) -> object:
-    """Request: ``[2]`` array index, ``[3]`` length."""
-    index = request[2]
+def _ssc_read_array(
+    payload: bytes, request: bytes | None, options: Options
+) -> object | None:
+    """Decode an array-read response.
+
+    Telemetry and firmware responses carry their array index as the first
+    payload byte.  The consumption-stat responses (index ``0x06`` and
+    ``0x0B``) carry the raw 8-byte chunk without an index prefix.  Unsolicited
+    or truncated notifications are ignored instead of raising ``IndexError``.
+    """
+    index = request[2] if request is not None and len(request) >= 3 else None
     if index == 0x00:
-        return parse_telemetry(payload[1:])
-    if index == 0x01:
-        return parse_firmware(payload[1:])
-    if index == 0x06:
-        return parse_lifetime_stats(payload[1:])
-    if index == 0x0B:
-        return parse_today_stats(payload[1:])
-    return f"unknown ssc command: {CMD_READ_ARRAY}"
+        data = payload[1:] if payload[:1] == b"\x00" else payload
+        if len(data) >= 17:
+            return parse_telemetry(data)
+    elif index == 0x01:
+        data = payload[1:] if payload[:1] == b"\x01" else payload
+        if len(data) >= 15:
+            return parse_firmware(data)
+    elif index == 0x06:
+        data = payload[1:] if len(payload) == 9 and payload[:1] == b"\x06" else payload
+        if len(data) >= 8:
+            return parse_lifetime_stats(data)
+    elif index == 0x0B:
+        data = payload[1:] if len(payload) == 9 and payload[:1] == b"\x0b" else payload
+        if len(data) >= 8:
+            return parse_today_stats(data)
+    else:
+        return f"unknown ssc command: {CMD_READ_ARRAY}"
+
+    logger.debug(
+        "Ignoring short array response index=%s payload=%s",
+        index,
+        payload.hex(" "),
+    )
+    return None
 
 
 #: SSC opcodes and their handlers (payload, original request) -> decoded result.
@@ -160,12 +206,21 @@ def _parse_ssc(
     options: Options,
 ) -> object | None:
     if request is None:
-        logger.warning("Original request is None for SSC")
+        logger.debug("Original request is None for SSC")
         return None
     handler = SSC_HANDLERS.get(command)
     if handler is None:
         return f"unknown ssc command: {command}"
-    return handler(payload, request, options)
+    try:
+        return handler(payload, request, options)
+    except (IndexError, ValueError) as exc:
+        logger.debug(
+            "Ignoring malformed SSC response command=%s payload=%s (%s)",
+            command,
+            payload.hex(" "),
+            exc,
+        )
+        return None
 
 
 #: Characteristic UUID -> handler taking (command, payload, request, options).
@@ -185,9 +240,17 @@ def parse_response(
     """Decode one notification packet from *characteristic*."""
     options = options or Options()
     logger.debug("Raw notify response data: %s", data.hex(" "))
+    if len(data) < 2:
+        logger.debug("Ignoring notification shorter than 2 bytes")
+        return None
     length = data[0]
     if length != len(data):
-        raise ValueError("Invalid data length")
+        logger.debug(
+            "Ignoring notification with length byte %s but %s actual bytes",
+            length,
+            len(data),
+        )
+        return None
     command = data[1]
     payload = data[2:]
     handler = HANDLERS.get(characteristic)

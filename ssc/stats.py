@@ -25,6 +25,10 @@ STAT_8BIT_KEYS = ("count-stagnation", "aerator-liters-per-minute")
 
 def parse_stats_raw(data: bytes) -> ConsumptionStats:
     """Extract the raw counters of one stats chunk."""
+    if len(data) < STAT_CHUNK_SIZE:
+        raise ValueError(
+            f"Stats chunk must be {STAT_CHUNK_SIZE} bytes, got {len(data)}"
+        )
     return {
         "count-normal": int.from_bytes(data[0:2], byteorder="little"),
         "runtime-normal": int.from_bytes(data[2:4], byteorder="little"),
@@ -79,6 +83,8 @@ def parse_stats_chunk(data: bytes, today_variant: bool = False) -> ConsumptionSt
 def parse_lifetime_stats(data: bytes) -> LifetimeStats:
     """Decode the lifetime counters (array index 0x06)."""
     logger.debug("Lifetime stats data: %s", data.hex(" "))
+    if len(data) < 8:
+        raise ValueError(f"Lifetime stats must be 8 bytes, got {len(data)}")
     return {
         "count-restart": int.from_bytes(data[0:4], byteorder="little"),
         "count-lifetime": int.from_bytes(data[4:8], byteorder="little"),

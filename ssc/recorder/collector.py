@@ -120,8 +120,8 @@ class SnapshotCollector:
             try:
                 if opcode == CMD_READ_EE_BY_ADDR:
                     self.assembler.add_response(request, data)
-                elif opcode == CMD_READ_ARRAY and len(data) >= 3:
-                    self._add_array(data[2], data[3:])
+                elif opcode == CMD_READ_ARRAY:
+                    self._add_array(request, data[2:])
                 elif opcode == CMD_READ_MODULE_INFO:
                     self._add_module_info(data[2:], request)
                 if isinstance(parsed, dict):
@@ -130,15 +130,81 @@ class SnapshotCollector:
                 logger.exception("Failed to collect notification")
                 self.errors.append(str(exc))
 
-    def _add_array(self, index: int, payload: bytes) -> None:
-        if index == 0x00 and len(payload) >= 17:
-            self.telemetry = dict(parse_telemetry(payload))
-        elif index == 0x01 and len(payload) >= 15:
-            self.firmware = dict(parse_firmware(payload))
-        elif index == 0x06 and len(payload) >= 8:
-            self.lifetime = dict(parse_lifetime_stats(payload))
-        elif index == 0x0B and len(payload) >= 8:
-            self.today = dict(parse_today_stats(payload))
+    def _add_array(self, request: bytes | None, payload: bytes) -> None:
+        """Collect an array response.
+
+        Telemetry/firmware notifications carry a leading array index.  The
+        consumption-stat responses are raw 8-byte chunks and must not be
+        sliced.  Length checks keep unsolicited or truncated notifications out
+        of the collector instead of raising ``IndexError``.
+        """
+        index = request[2] if request is not None and len(request) >= 3 else None
+
+        if len(payload) >= 18 and payload[0] == 0x00:
+            data = payload[1:]
+            if len(data) >= 17:
+                try:
+                    self.telemetry = dict(parse_telemetry(data))
+                except ValueError:
+                    logger.debug("Ignoring invalid telemetry payload", exc_info=True)
+                return
+
+        if len(payload) >= 16 and payload[0] == 0x01:
+            data = payload[1:]
+            if len(data) >= 15:
+                try:
+                    self.firmware = dict(parse_firmware(data))
+                except ValueError:
+                    logger.debug("Ignoring invalid firmware payload", exc_info=True)
+                return
+
+        if index == 0x00:
+            data = payload[1:] if payload[:1] == b"\x00" else payload
+            if len(data) >= 17:
+                try:
+                    self.telemetry = dict(parse_telemetry(data))
+                except ValueError:
+                    logger.debug("Ignoring invalid telemetry payload", exc_info=True)
+            return
+
+        if index == 0x01:
+            data = payload[1:] if payload[:1] == b"\x01" else payload
+            if len(data) >= 15:
+                try:
+                    self.firmware = dict(parse_firmware(data))
+                except ValueError:
+                    logger.debug("Ignoring invalid firmware payload", exc_info=True)
+            return
+
+        if index in (0x06, 0x0B):
+            data = (
+                payload[1:]
+                if len(payload) == 9 and payload[:1] == bytes((index,))
+                else payload
+            )
+            if len(data) < 8:
+                logger.debug(
+                    "Ignoring short array response index=%s payload=%s",
+                    index,
+                    payload.hex(" "),
+                )
+                return
+            try:
+                if index == 0x06:
+                    self.lifetime = dict(parse_lifetime_stats(data))
+                else:
+                    self.today = dict(parse_today_stats(data))
+            except ValueError:
+                logger.debug(
+                    "Ignoring invalid stats payload index=%s", index, exc_info=True
+                )
+            return
+
+        logger.debug(
+            "Ignoring array response index=%s payload=%s",
+            index,
+            payload.hex(" "),
+        )
 
     def _add_module_info(self, payload: bytes, request: bytes | None) -> None:
         if len(payload) >= 8:

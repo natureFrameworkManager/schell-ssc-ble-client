@@ -22,6 +22,10 @@ from ssc.types import Telemetry
 
 def parse_telemetry_raw(data: bytes) -> Telemetry:
     """Extract the raw telemetry fields."""
+    if len(data) < 17:
+        raise ValueError(
+            f"Telemetry payload must be at least 17 bytes, got {len(data)}"
+        )
     return {
         "temperature": int.from_bytes(data[0:4], byteorder="little"),
         "battery_voltage_raw": int.from_bytes(data[4:6], byteorder="little"),
@@ -42,12 +46,16 @@ def parse_telemetry(data: bytes) -> Telemetry:
     battery = calculate_battery(telemetry["battery_voltage_raw"])
     telemetry["battery"] = battery
     telemetry["vcc"] = calculate_voltage(telemetry["vcc_raw"])
-    telemetry["datetime"] = calculate_date_time(
-        telemetry["year"],
-        telemetry["month"],
-        telemetry["day"],
-        telemetry["hour"],
-        telemetry["minute"],
-        telemetry["second"],
-    )
+    try:
+        telemetry["datetime"] = calculate_date_time(
+            telemetry["year"],
+            telemetry["month"],
+            telemetry["day"],
+            telemetry["hour"],
+            telemetry["minute"],
+            telemetry["second"],
+        )
+    except ValueError:
+        # Keep the raw telemetry even if the device RTC contains invalid fields.
+        telemetry["datetime"] = None
     return telemetry

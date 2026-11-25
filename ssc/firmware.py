@@ -31,6 +31,10 @@ def parse_reset_reason(reason: int) -> str:
 
 def parse_firmware_raw(data: bytes) -> FirmwareInfo:
     """Extract the raw version and reset reason fields."""
+    if len(data) < 15:
+        raise ValueError(
+            f"Firmware payload must be at least 15 bytes, got {len(data)}"
+        )
     return {
         "hardware_version_raw": data[0:2],
         "bootloader_version_raw": data[2:4],

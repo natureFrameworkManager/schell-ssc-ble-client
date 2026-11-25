@@ -57,7 +57,7 @@ class Telemetry(TypedDict, total=False):
     hour: int
     minute: int
     second: int
-    datetime: datetime.datetime
+    datetime: datetime.datetime | None
 
 
 class FirmwareInfo(TypedDict, total=False):
