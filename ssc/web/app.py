@@ -16,7 +16,7 @@ from sqlalchemy.exc import OperationalError
 
 from ssc.web.config import WebConfig, load_config
 from ssc.web.db import create_readonly_engine
-from ssc.web.routers import devices, health, history, presence, snapshots
+from ssc.web.routers import devices, export, health, history, presence, snapshots
 
 logger = logging.getLogger(__name__)
 BASE_DIR = Path(__file__).resolve().parent
@@ -75,6 +75,7 @@ def create_app(config: WebConfig) -> FastAPI:
     app.include_router(presence.router, prefix=api_prefix)
     app.include_router(snapshots.router, prefix=api_prefix)
     app.include_router(history.router, prefix=api_prefix)
+    app.include_router(export.router, prefix=api_prefix)
 
     app.mount(
         "/static",

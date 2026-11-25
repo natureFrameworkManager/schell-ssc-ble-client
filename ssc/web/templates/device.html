@@ -21,6 +21,11 @@
     <button type="button" data-range="30" class="active">30d</button>
     <button type="button" data-range="90">90d</button>
   </div>
+  <div class="custom-range">
+    <label>From <input type="datetime-local" id="range-from"></label>
+    <label>To <input type="datetime-local" id="range-to"></label>
+    <button type="button" class="button secondary" id="apply-range">Apply range</button>
+  </div>
   <span id="range-label" class="muted"></span>
   <button type="button" class="button" id="refresh-device">Refresh</button>
 </div>
@@ -31,6 +36,7 @@
   <button type="button" role="tab" data-tab="history">History</button>
   <button type="button" role="tab" data-tab="snapshots">Snapshots</button>
   <button type="button" role="tab" data-tab="compare">Compare</button>
+  <button type="button" role="tab" data-tab="export">Export</button>
 </nav>
 
 <section class="tab-panel active" data-panel="presence">
@@ -112,6 +118,104 @@
       <button type="button" class="button" id="compare-button">Compare</button>
     </div>
     <div id="compare-result" class="muted">Choose two snapshots with stored EEPROM images.</div>
+  </div>
+</section>
+
+<section class="tab-panel" data-panel="export">
+  <div class="card">
+    <div class="card-head">
+      <h2>Export statistics</h2>
+      <span class="muted" id="export-range"></span>
+    </div>
+    <form id="export-form" class="export-form">
+      <div class="export-options">
+        <label>
+          Format
+          <select id="export-format">
+            <option value="csv">CSV</option>
+            <option value="json">JSON</option>
+            <option value="xlsx">XLSX</option>
+            <option value="pdf">PDF</option>
+          </select>
+        </label>
+        <label>
+          CSV delimiter
+          <select id="export-delimiter">
+            <option value="comma">Comma</option>
+            <option value="semicolon">Semicolon</option>
+            <option value="tab">Tab</option>
+          </select>
+        </label>
+        <label>
+          PDF page size
+          <select id="export-pdf-page">
+            <option value="a4">A4</option>
+            <option value="letter">Letter</option>
+          </select>
+        </label>
+        <label>
+          PDF orientation
+          <select id="export-pdf-orientation">
+            <option value="landscape">Landscape</option>
+            <option value="portrait">Portrait</option>
+          </select>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" id="export-pretty" checked> pretty JSON
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" id="export-metadata" checked> include metadata
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" id="export-bom"> UTF-8 BOM for CSV
+        </label>
+      </div>
+
+      <fieldset class="export-datasets">
+        <legend>Datasets</legend>
+        <label class="checkbox">
+          <input type="checkbox" id="export-select-all" checked> select all
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" class="export-dataset" value="summary" checked> Summary
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" class="export-dataset" value="presence" checked> Online/off history
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" class="export-dataset" value="telemetry" checked> Telemetry
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" class="export-dataset" value="counters" checked> Counters
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" class="export-dataset" value="daily" checked> Daily statistics
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" class="export-dataset" value="events" checked> Event logs
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" class="export-dataset" value="config" checked> Current configuration
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" class="export-dataset" value="config_changes" checked> Configuration changes
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" class="export-dataset" value="snapshots" checked> Snapshot metadata
+        </label>
+      </fieldset>
+
+      <div class="export-actions">
+        <button type="submit" class="button">Download export</button>
+        <span id="export-status" class="muted"></span>
+      </div>
+      <p class="muted">
+        The export uses the currently selected date range. CSV with multiple
+        datasets is returned as a ZIP archive containing one CSV per dataset.
+        Metadata is included in JSON/XLSX/PDF and in the multi-dataset CSV ZIP; a
+        single CSV contains only its dataset.
+      </p>
+    </form>
   </div>
 </section>
 {% endblock %}

@@ -25,6 +25,7 @@ class WebConfig:
     default_range_days: int = 30
     max_presence_intervals: int = 5000
     max_history_points: int = 5000
+    max_export_rows: int = 200000
 
     basic_auth_user: str | None = None
     basic_auth_password_env: str = "SSC_WEB_PASSWORD"
@@ -34,7 +35,11 @@ class WebConfig:
             raise ValueError("port must be between 1 and 65535")
         if self.default_range_days <= 0:
             raise ValueError("default_range_days must be greater than zero")
-        if self.max_presence_intervals <= 0 or self.max_history_points <= 0:
+        if (
+            self.max_presence_intervals <= 0
+            or self.max_history_points <= 0
+            or self.max_export_rows <= 0
+        ):
             raise ValueError("limits must be greater than zero")
         return self
 
@@ -104,6 +109,9 @@ def load_config(
             ),
             max_history_points=_int(
                 section.get("max_history_points"), config.max_history_points
+            ),
+            max_export_rows=_int(
+                section.get("max_export_rows"), config.max_export_rows
             ),
             basic_auth_user=section.get("basic_auth_user") or config.basic_auth_user,
             basic_auth_password_env=str(

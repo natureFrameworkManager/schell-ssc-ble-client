@@ -17,6 +17,8 @@ web = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
     "jinja2>=3.1",
+    "openpyxl>=3.1",
+    "reportlab>=4.0",
 ]
 
 [project.scripts]

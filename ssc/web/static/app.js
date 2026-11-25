@@ -246,14 +246,40 @@
   const device = {
     id: Number(document.body.dataset.deviceId || 0),
     rangeDays: 30,
+    customRange: null,
     snapshots: [],
     loading: false,
   };
 
   function rangeParams() {
+    if (device.customRange) return { ...device.customRange };
     const to = new Date();
     const from = new Date(to.getTime() - device.rangeDays * 86400000);
     return { from: from.toISOString(), to: to.toISOString() };
+  }
+
+  function localInputValue(value) {
+    const date = new Date(value);
+    const pad = (part) => String(part).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+      date.getDate()
+    )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  function fillRangeInputs(from, to) {
+    const fromInput = $("#range-from");
+    const toInput = $("#range-to");
+    if (fromInput) fromInput.value = localInputValue(from);
+    if (toInput) toInput.value = localInputValue(to);
+  }
+
+  function rangeDescription() {
+    if (device.customRange) {
+      return `custom ${formatShortTime(device.customRange.from)} → ${formatShortTime(
+        device.customRange.to
+      )}`;
+    }
+    return `last ${device.rangeDays} day(s)`;
   }
 
   function rangeQuery(extra) {
@@ -743,7 +769,9 @@
 
   async function loadSnapshots() {
     try {
-      const data = await api(`/devices/${device.id}/snapshots?limit=100`);
+      const data = await api(
+        `/devices/${device.id}/snapshots?${rangeQuery({ limit: 100 })}`
+      );
       device.snapshots = data.items || [];
       renderSnapshotList(data);
     } catch (error) {
@@ -871,6 +899,94 @@
     }
   }
 
+  function updateExportRange() {
+    const label = $("#export-range");
+    if (label) label.textContent = rangeDescription();
+  }
+
+  function selectedExportDatasets() {
+    return $$(".export-dataset:checked").map((input) => input.value);
+  }
+
+  function syncSelectAll() {
+    const all = $("#export-select-all");
+    const boxes = $$(".export-dataset");
+    if (!all) return;
+    all.checked = boxes.length > 0 && boxes.every((box) => box.checked);
+  }
+
+  function syncExportFormat() {
+    const format = $("#export-format") ? $("#export-format").value : "csv";
+    const delimiter = $("#export-delimiter");
+    const bom = $("#export-bom");
+    const pretty = $("#export-pretty");
+    const pdfPage = $("#export-pdf-page");
+    const pdfOrientation = $("#export-pdf-orientation");
+    if (delimiter) delimiter.disabled = format !== "csv";
+    if (bom) bom.disabled = format !== "csv";
+    if (pretty) pretty.disabled = format !== "json";
+    if (pdfPage) pdfPage.disabled = format !== "pdf";
+    if (pdfOrientation) pdfOrientation.disabled = format !== "pdf";
+  }
+
+  async function downloadExport(event) {
+    event.preventDefault();
+    clearError();
+    const datasets = selectedExportDatasets();
+    const status = $("#export-status");
+    if (!datasets.length) {
+      if (status) status.textContent = "Select at least one dataset.";
+      return;
+    }
+    const format = $("#export-format").value;
+    const params = new URLSearchParams({
+      format,
+      datasets: datasets.join(","),
+      delimiter: $("#export-delimiter").value,
+      pretty: $("#export-pretty").checked ? "true" : "false",
+      include_metadata: $("#export-metadata").checked ? "true" : "false",
+      bom: $("#export-bom").checked ? "true" : "false",
+      pdf_page_size: $("#export-pdf-page").value,
+      pdf_orientation: $("#export-pdf-orientation").value,
+    });
+    const range = rangeParams();
+    params.set("from", range.from);
+    params.set("to", range.to);
+    if (status) status.textContent = "Preparing export…";
+    try {
+      const response = await fetch(
+        `${ROOT}/api/v1/devices/${device.id}/export?${params.toString()}`,
+        { headers: { Accept: "*/*" } }
+      );
+      if (!response.ok) {
+        let detail = `${response.status} ${response.statusText}`;
+        try {
+          const body = await response.json();
+          if (body && body.detail) detail = body.detail;
+        } catch (error) {
+          // The response was not JSON.
+        }
+        throw new Error(detail);
+      }
+      const blob = await response.blob();
+      const disposition = response.headers.get("content-disposition") || "";
+      const match = disposition.match(/filename="?([^";]+)"?/i);
+      const filename = match ? match[1] : `ssc-export.${format}`;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      if (status) status.textContent = `Downloaded ${filename}`;
+    } catch (error) {
+      if (status) status.textContent = "";
+      showError(error);
+    }
+  }
+
   function setTab(name) {
     $$(".tabs button").forEach((button) => {
       button.classList.toggle("active", button.dataset.tab === name);
@@ -882,31 +998,69 @@
 
   function setRange(days) {
     device.rangeDays = days;
+    device.customRange = null;
     $$("[data-range]").forEach((button) => {
       button.classList.toggle("active", Number(button.dataset.range) === days);
     });
+    const range = rangeParams();
+    fillRangeInputs(range.from, range.to);
     const label = $("#range-label");
-    if (label) label.textContent = `last ${days} day(s)`;
+    if (label) label.textContent = rangeDescription();
+    updateExportRange();
     loadPresence();
     loadHistory();
+    loadSnapshots();
+  }
+
+  function applyCustomRange() {
+    const fromValue = $("#range-from") ? $("#range-from").value : "";
+    const toValue = $("#range-to") ? $("#range-to").value : "";
+    if (!fromValue || !toValue) {
+      showError("Choose both a start and an end for the custom range.");
+      return;
+    }
+    const from = new Date(fromValue);
+    const to = new Date(toValue);
+    if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) {
+      showError("The custom range contains an invalid date.");
+      return;
+    }
+    if (from >= to) {
+      showError("The custom range start must be before the end.");
+      return;
+    }
+    clearError();
+    device.customRange = {
+      from: from.toISOString(),
+      to: to.toISOString(),
+    };
+    $$("[data-range]").forEach((button) => button.classList.remove("active"));
+    const label = $("#range-label");
+    if (label) label.textContent = rangeDescription();
+    updateExportRange();
+    loadPresence();
+    loadHistory();
+    loadSnapshots();
   }
 
   function initDevicePage() {
     loadHealth();
     loadDevice();
     loadCurrent();
-    loadSnapshots();
 
     $$(".tabs button").forEach((button) => {
       button.addEventListener("click", () => {
         setTab(button.dataset.tab);
         if (button.dataset.tab === "history") loadHistory();
         if (button.dataset.tab === "snapshots") loadSnapshots();
+        if (button.dataset.tab === "export") updateExportRange();
       });
     });
     $$("[data-range]").forEach((button) => {
       button.addEventListener("click", () => setRange(Number(button.dataset.range)));
     });
+    const applyRange = $("#apply-range");
+    if (applyRange) applyRange.addEventListener("click", applyCustomRange);
     const refresh = $("#refresh-device");
     if (refresh) {
       refresh.addEventListener("click", () => {
@@ -920,6 +1074,22 @@
     }
     const compare = $("#compare-button");
     if (compare) compare.addEventListener("click", runCompare);
+    const exportForm = $("#export-form");
+    if (exportForm) exportForm.addEventListener("submit", downloadExport);
+    const exportFormat = $("#export-format");
+    if (exportFormat) exportFormat.addEventListener("change", syncExportFormat);
+    syncExportFormat();
+    const selectAll = $("#export-select-all");
+    if (selectAll) {
+      selectAll.addEventListener("change", () => {
+        $$(".export-dataset").forEach((box) => {
+          box.checked = selectAll.checked;
+        });
+      });
+    }
+    $$(".export-dataset").forEach((box) => {
+      box.addEventListener("change", syncSelectAll);
+    });
     setRange(device.rangeDays);
   }
 

@@ -84,6 +84,24 @@ curl -s http://127.0.0.1:8000/api/v1/devices/1/state/current \
 
 curl -s http://127.0.0.1:8000/api/v1/devices/1/snapshots?limit=10 \
     | python3 -m json.tool
+
+# CSV, one dataset
+curl -o /tmp/ssc-daily.csv \
+    'http://127.0.0.1:8000/api/v1/devices/1/export?format=csv&datasets=daily&from=2026-11-01T00:00:00Z&to=2026-12-01T00:00:00Z'
+
+# CSV, multiple datasets (returns a ZIP)
+curl -o /tmp/ssc-export.zip \
+    'http://127.0.0.1:8000/api/v1/devices/1/export?format=csv&datasets=summary,presence,telemetry'
+
+# JSON and XLSX
+curl -o /tmp/ssc-export.json \
+    'http://127.0.0.1:8000/api/v1/devices/1/export?format=json&datasets=telemetry,counters&pretty=true'
+curl -o /tmp/ssc-export.xlsx \
+    'http://127.0.0.1:8000/api/v1/devices/1/export?format=xlsx&datasets=summary,daily,events'
+
+# PDF
+curl -o /tmp/ssc-export.pdf \
+    'http://127.0.0.1:8000/api/v1/devices/1/export?format=pdf&datasets=summary,presence,telemetry&pdf_page_size=a4&pdf_orientation=landscape'
 ```
 
 Expected error cases:
@@ -159,6 +177,36 @@ Expected error cases:
 - Configuration, telemetry, counters and daily changes are shown.
 - New and removed events are shown.
 - Comparing the same snapshot or snapshots without EEPROM gives a useful message.
+
+### Custom date range
+
+- The device page has From/To datetime inputs and an Apply range button.
+- Applying a valid custom range refreshes presence, history, snapshots and
+  export.
+- Preset buttons 24h/7d/30d/90d clear the custom range and fill the inputs.
+- An empty or reversed custom range shows a validation message and does not
+  reload data.
+- The selected range label and export range reflect the custom range.
+
+### Export tab
+
+- Export uses the currently selected 24h/7d/30d/90d range.
+- CSV with one dataset downloads a single `.csv`.
+- CSV with multiple datasets downloads a `.zip` containing one CSV per
+  selected dataset plus `metadata.json`.
+- CSV delimiter options comma, semicolon and tab work.
+- “UTF-8 BOM for CSV” adds a BOM when enabled.
+- JSON export contains the selected datasets; “pretty JSON” controls
+  indentation and “include metadata” controls the metadata object.
+- XLSX export opens correctly and contains one sheet per selected dataset plus
+  a metadata sheet when enabled.
+- PDF export opens correctly, has a title, range, optional metadata and one
+  section per dataset.
+- PDF page size A4 and Letter work, and portrait/landscape orientation work.
+- Metadata is included for JSON/XLSX/PDF and multi-dataset CSV ZIP exports. A
+  single CSV contains only its dataset.
+- Selecting no datasets shows an error and downloads nothing.
+- An unknown dataset or invalid date range returns `422`.
 
 ### Recorder stopped
 
