@@ -56,7 +56,7 @@
     const options = detailed
       ? { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" }
       : { month: "short", day: "2-digit" };
-    return date.toLocaleString(undefined, options);
+    return date.toLocaleString("de-DE", options);
   }
 
   function line(canvas, series, options) {

@@ -20,7 +20,7 @@
     if (!value) return fallback || "—";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return String(value);
-    return date.toLocaleString(undefined, {
+    return date.toLocaleString("de-DE", {
       year: "numeric",
       month: "short",
       day: "2-digit",
@@ -34,7 +34,7 @@
     if (!value) return "—";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return String(value);
-    return date.toLocaleString(undefined, {
+    return date.toLocaleString("de-DE", {
       month: "short",
       day: "2-digit",
       hour: "2-digit",
