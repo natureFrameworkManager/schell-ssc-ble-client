@@ -576,6 +576,7 @@
 
     if (state.daily_stats && state.daily_stats.length) {
       const rows = state.daily_stats
+        .filter(el => new Date(el.date).getTime() < Date.now())
         .slice(-30)
         .reverse()
         .map(
